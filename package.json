@@ -1,0 +1,27 @@
+{
+  "name": "nysse-gtfsrt-feeder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nysse GTFS-RT Data Feeder",
+  "main": "dist/index.js",
+  "author": "Hannu Tapanila",
+  "scripts": {
+    "start": "nodemon dist/index.js",
+    "build": "tsc",
+    "build:watch": "tsc -w"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^4.0.2",
+    "@types/express": "^4.11.0",
+    "@types/node": "^8.5.8",
+    "tslint": "^5.9.1",
+    "tslint-config-prettier": "^1.6.0",
+    "tslint-config-standard": "^7.0.0",
+    "typescript": "^2.6.2"
+  }
+}
