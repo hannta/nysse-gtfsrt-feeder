@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from '../config/config';
 import { DataProvider } from './index';
+import { storeTripUpdateFeed } from './../lib/gtfsRTFeedProcessor';
 
 export class OuluProvider implements DataProvider {
   public name = 'oulu';
@@ -19,6 +20,7 @@ export class OuluProvider implements DataProvider {
     };
 
     const resp = await axios.request(requestConfig);
+    storeTripUpdateFeed(this.name, resp.data);
     console.log('ping!');
     return 0;
   }
