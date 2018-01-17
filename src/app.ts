@@ -4,6 +4,7 @@ import * as Boom from 'boom';
 import winstonInstance from './config/winston';
 import config from './config/config';
 import { StatusController } from './controllers/status';
+import { startDataProviders } from './providers';
 
 class App {
   public express: express.Application;
@@ -13,6 +14,8 @@ class App {
     this.middleware();
     this.mountRoutes();
     this.errorHandlers();
+
+    startDataProviders();
   }
 
   public middleware() {
