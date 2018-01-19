@@ -3,6 +3,7 @@ import * as lodash from 'lodash';
 import * as GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import { TripUpdateDB, updateDatabase } from '../lib/databaseUpdater';
 import { StopTimeUpdateDB } from '../lib/databaseUpdater';
+import { getTripStops, TripStop } from '../lib/gtfsUtil';
 
 interface FeedMessage {
   header: FeedHeader;
@@ -79,20 +80,70 @@ export async function storeTripUpdateFeed(regionName: string, feedBinary: any) {
   const tripUpdates: TripUpdateDB[] = [];
   const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
 
-  // Process feed entities
+  // Process feed entities, create trip updates
   for (const entity of feedData.entity) {
     const tripUpdate = createTripUpdate(entity, feedTimestampString);
     tripUpdates.push(tripUpdate);
 
+    let stopIdMissing = false;
+    let stopSequenceMissing = false;
+
+    // Create stop time updates
     tripUpdateStopTimeUpdates.push(
       ...entity.trip_update.stop_time_update.map(stopTimeUpdate => {
-        return createStopTimeUpdate(stopTimeUpdate, tripUpdate.trip_update_id);
+        const tripUpdateStopTimeUpdate = createStopTimeUpdate(
+          stopTimeUpdate,
+          tripUpdate.trip_update_id,
+        );
+
+        stopIdMissing = !tripUpdateStopTimeUpdate.stop_id ? true : stopIdMissing;
+        stopSequenceMissing = !tripUpdateStopTimeUpdate.stop_sequence ? true : stopSequenceMissing;
+
+        return tripUpdateStopTimeUpdate;
       }),
     );
+
+    // Add missing stop_id and stop_sequence values for stop time updates
+    if (stopIdMissing || stopSequenceMissing) {
+      const tripAllStops = await getTripStops(regionName, tripUpdate.trip_id);
+      if (tripAllStops && tripAllStops.length > 0) {
+        addMissingStoTimeUpdateInfos(tripUpdateStopTimeUpdates, tripAllStops);
+      }
+    }
   }
 
   await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates);
   return tripUpdates.length;
+}
+
+/**
+ * Add missing stop_id's to stop time updates
+ * @param tripUpdateStopTimeUpdates
+ * @param tripAllStops
+ */
+function addMissingStoTimeUpdateInfos(
+  tripUpdateStopTimeUpdates: StopTimeUpdateDB[],
+  tripAllStops: TripStop[],
+) {
+  for (const stopTimeUpdate of tripUpdateStopTimeUpdates) {
+    if (!stopTimeUpdate.stop_id && stopTimeUpdate.stop_sequence) {
+      // Add stop_id if missing
+      const stop = tripAllStops.find((stop: TripStop) => {
+        return stop.stop_sequence === stopTimeUpdate.stop_sequence;
+      });
+      if (stop) {
+        stopTimeUpdate.stop_id = stop.stop_id;
+      }
+    } else if (!stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_id) {
+      // Add stop_sequence if missing
+      const stop = tripAllStops.find((stop: TripStop) => {
+        return stop.stop_id === stopTimeUpdate.stop_id;
+      });
+      if (stop) {
+        stopTimeUpdate.stop_sequence = stop.stop_sequence;
+      }
+    }
+  }
 }
 
 /**
