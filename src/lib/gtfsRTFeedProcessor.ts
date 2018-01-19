@@ -1,33 +1,8 @@
 import * as moment from 'moment';
 import * as lodash from 'lodash';
 import * as GtfsRealtimeBindings from 'gtfs-realtime-bindings';
-
-interface TripUpdateDB {
-  trip_update_id: string;
-  trip_id?: string;
-  route_id?: string;
-  direction_id?: number;
-  trip_start_time?: string;
-  trip_start_date?: string;
-  schedule_relationship?: number;
-  vehicle_id?: string;
-  vehicle_label?: string;
-  vehicle_license_plate?: string;
-  recorded?: string;
-}
-
-interface StopTimeUpdateDB {
-  stop_sequence?: number;
-  stop_id?: string;
-  arrival_delay?: number;
-  arrival_time?: number;
-  arrival_uncertainty?: number;
-  departure_delay?: number;
-  departure_time?: number;
-  departure_uncertainty?: number;
-  schedule_relationship?: string;
-  trip_update_id: string;
-}
+import { TripUpdateDB, updateDatabase } from '../lib/databaseUpdater';
+import { StopTimeUpdateDB } from '../lib/databaseUpdater';
 
 interface FeedMessage {
   header: FeedHeader;
@@ -116,9 +91,7 @@ export async function storeTripUpdateFeed(regionName: string, feedBinary: any) {
     );
   }
 
-  console.log(JSON.stringify(tripUpdates, null, 4));
-  console.log(JSON.stringify(tripUpdateStopTimeUpdates, null, 4));
-
+  await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates);
   return tripUpdates.length;
 }
 
