@@ -28,7 +28,7 @@ export interface StopTimeUpdateDB {
   departure_delay?: number;
   departure_time?: number;
   departure_uncertainty?: number;
-  schedule_relationship?: string;
+  schedule_relationship?: number;
   trip_update_id: string;
 }
 

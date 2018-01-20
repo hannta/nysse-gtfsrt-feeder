@@ -173,7 +173,10 @@ function createTripUpdate(entity: FeedEntity, recorded: string): TripUpdateDB {
  * @param {*} stopTimeUpdate
  * @param {*} tripUpdateId
  */
-function createStopTimeUpdate(stopTimeUpdateData: any, tripUpdateId: string): StopTimeUpdateDB {
+function createStopTimeUpdate(
+  stopTimeUpdateData: StopTimeUpdate,
+  tripUpdateId: string,
+): StopTimeUpdateDB {
   return {
     stop_sequence: stopTimeUpdateData.stop_sequence,
     stop_id: stopTimeUpdateData.stop_id,
