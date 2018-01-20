@@ -11,35 +11,35 @@ interface TampereSiriData {
 interface TampereServiceDelivery {
   recordedAtTime: string;
   validUntilTime: string;
-  monitoredVehicleJourney: TampereMonitoredVehicleJourney;
+  monitoredVehicleJourney?: TampereMonitoredVehicleJourney;
 }
 
 interface TampereMonitoredVehicleJourney {
-  lineRef: string;
-  directionRef: string;
-  framedVehicleJourneyRef: TampereFramedVehicleJourneyRef;
-  operatorRef: string;
-  bearing: string;
-  delay: string;
-  vehicleRef: string;
-  journeyPatternRef: string;
-  originShortName: string;
-  destinationShortName: string;
-  speed: string;
-  originAimedDepartureTime: string;
+  lineRef?: string;
+  directionRef?: string;
+  framedVehicleJourneyRef?: TampereFramedVehicleJourneyRef;
+  operatorRef?: string;
+  bearing?: string;
+  delay?: string;
+  vehicleRef?: string;
+  journeyPatternRef?: string;
+  originShortName?: string;
+  destinationShortName?: string;
+  speed?: string;
+  originAimedDepartureTime?: string;
   onwardCalls?: TampereOnwardCall[];
 }
 
 interface TampereFramedVehicleJourneyRef {
-  dateFrameRef: string;
+  dateFrameRef?: string;
   datedVehicleJourneyRef: string;
 }
 
 interface TampereOnwardCall {
-  expectedArrivalTime: string;
-  expectedDepartureTime: string;
-  stopPointRef: string;
-  order: string;
+  expectedArrivalTime?: string;
+  expectedDepartureTime?: string;
+  stopPointRef?: string;
+  order?: string;
 }
 
 /**
@@ -140,7 +140,7 @@ export async function storeTripUpdateFeed(
     });
 
     // Process stop time updates
-    for (let onwardCall of onwardCalls) {
+    for (const onwardCall of onwardCalls) {
       tripUpdateStopTimeUpdates.push(createStopTimeUpdate(onwardCall, tripUpdateId));
     }
   }

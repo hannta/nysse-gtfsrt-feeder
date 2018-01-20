@@ -37,7 +37,7 @@ class App {
         res: express.Response,
         next: express.NextFunction,
       ) => {
-        let convertedError: Boom.BoomError = err.isBoom ? err : Boom.boomify(err);
+        const convertedError: Boom.BoomError = err.isBoom ? err : Boom.boomify(err);
 
         winstonInstance.error('Error', convertedError.message, convertedError.output);
 
