@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import { statusDataMap } from '../providers';
 
 /**
  * Simple status controller
@@ -12,6 +13,6 @@ export class StatusController {
   }
 
   public async getStatus(req: Request, res: Response, next: NextFunction) {
-    res.json({ ok: true }); // TODO
+    res.json([...statusDataMap]); // Improve formatting!
   }
 }
