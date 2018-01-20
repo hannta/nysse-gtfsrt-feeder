@@ -17,6 +17,10 @@ interface ConfigSettings {
     gtfsrtTripUpdatesUrl: string;
     gtfsrtTripUpdatesInterval: number;
   };
+  lahti: {
+    gtfsrtTripUpdatesUrl: string;
+    gtfsrtTripUpdatesInterval: number;
+  };
 }
 
 const config: ConfigSettings = {
@@ -34,6 +38,10 @@ const config: ConfigSettings = {
   },
   oulu: {
     gtfsrtTripUpdatesUrl: process.env.OULU_GTFSRT_TRIP_UPDATES_URL,
+    gtfsrtTripUpdatesInterval: 30000,
+  },
+  lahti: {
+    gtfsrtTripUpdatesUrl: process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL,
     gtfsrtTripUpdatesInterval: 30000,
   },
 };

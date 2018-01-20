@@ -1,6 +1,7 @@
 import * as moment from 'moment';
 import winstonInstance from '../config/winston';
 import { OuluProvider } from '../providers/oulu';
+import { LahtiProvider } from '../providers/lahti';
 
 export interface DataProvider {
   name: string;
@@ -13,7 +14,7 @@ export interface DataProviderStatus {
   lastTripUpdateCount: number;
 }
 
-const dataProviders: DataProvider[] = [new OuluProvider()];
+const dataProviders: DataProvider[] = [new OuluProvider(), new LahtiProvider()];
 
 export const statusDataMap = new Map<string, DataProviderStatus>();
 
