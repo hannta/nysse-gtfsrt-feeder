@@ -15,6 +15,7 @@ interface ConfigSettings {
   };
   oulu: RegionConfig;
   lahti: RegionConfig;
+  tampere: RegionConfig;
 }
 
 interface RegionConfig {
@@ -41,6 +42,10 @@ const config: ConfigSettings = {
   },
   lahti: {
     gtfsrtTripUpdatesUrl: process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL,
+    gtfsrtTripUpdatesInterval: 30000,
+  },
+  tampere: {
+    gtfsrtTripUpdatesUrl: process.env.TAMPERE_UPDATES_URL,
     gtfsrtTripUpdatesInterval: 30000,
   },
 };
