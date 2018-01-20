@@ -13,14 +13,13 @@ interface ConfigSettings {
     poolConnectionMax: number;
     debug: boolean;
   };
-  oulu: {
-    gtfsrtTripUpdatesUrl: string;
-    gtfsrtTripUpdatesInterval: number;
-  };
-  lahti: {
-    gtfsrtTripUpdatesUrl: string;
-    gtfsrtTripUpdatesInterval: number;
-  };
+  oulu: RegionConfig;
+  lahti: RegionConfig;
+}
+
+interface RegionConfig {
+  gtfsrtTripUpdatesUrl: string;
+  gtfsrtTripUpdatesInterval: number;
 }
 
 const config: ConfigSettings = {
