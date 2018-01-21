@@ -57,19 +57,20 @@ export async function storeTripUpdateFeed(
 
   const tripUpdates: TripUpdateDB[] = [];
   const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
-  const activeServicesCache: any = {};
+  //const activeServicesCache: any = {};
+  const activeServicesMap = new Map<string, string[]>();
 
   for (const serviceDelivery of feedData.body) {
     // Get active services, and cache them
     const tripStart = moment(
       serviceDelivery.monitoredVehicleJourney.framedVehicleJourneyRef.dateFrameRef,
     );
+
+    // Get active services, and cache them
     const tripStartDate = tripStart.format('YYYYMMDD');
-    if (!activeServicesCache[tripStartDate]) {
-      activeServicesCache[tripStartDate] = await getActiveServiceIds(
-        'tampere',
-        moment(tripStart).toDate(),
-      );
+    if (!activeServicesMap.has(tripStartDate)) {
+      const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
+      activeServicesMap.set(tripStartDate, activeServices);
     }
 
     // Try to parse infos
@@ -109,7 +110,7 @@ export async function storeTripUpdateFeed(
       routeId,
       originDepartureString,
       direction,
-      activeServicesCache[tripStartDate],
+      activeServicesMap.get(tripStartDate),
     );
 
     // Get onward calls, stop time updates

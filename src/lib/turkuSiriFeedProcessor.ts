@@ -2,11 +2,11 @@ import * as moment from 'moment';
 import * as lodash from 'lodash';
 import { updateDatabase, TripUpdateDB, StopTimeUpdateDB } from './databaseUpdater';
 import {
-  getActiveServices,
   getRouteIdMappings,
   getTripId,
   getTripStops,
   TripStop,
+  getActiveServiceIds,
 } from './gtfsUtil';
 
 interface TurkuSiriData {
@@ -103,7 +103,7 @@ export async function storeTripUpdateFeed(
       // Get active services, and cache them
       const tripStartDayString = moment(tripStart).format('YYYYMMDD');
       if (!activeServicesMap.has(tripStartDayString)) {
-        const activeServices = await getActiveServices(regionName, moment(tripStart).toDate());
+        const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
         activeServicesMap.set(tripStartDayString, activeServices);
       }
 

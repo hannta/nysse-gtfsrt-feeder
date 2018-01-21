@@ -115,41 +115,6 @@ export function getGtfsCalendarDayColumnName(date: Date): string {
 }
 
 /**
- * Get day active services
- * @param regionName
- * @param date
- */
-export async function getActiveServices(regionName: string, date: Date): Promise<string[]> {
-  const calendarTable = `${regionName}_calendar`;
-  const calendarDatesTable = `${regionName}_calendar_dates`;
-  const calendarDatesColumn = getGtfsCalendarDayColumnName(date);
-  const formattedDate = moment(date).format('YYYYMMDD');
-
-  const services = await knex(calendarTable)
-    .select('service_id')
-    .where('start_date', '<=', formattedDate)
-    .andWhere('end_date', '>=', formattedDate)
-    .andWhere(calendarDatesColumn, 1)
-    .whereNotIn('service_id', (qb: QueryBuilder) => {
-      qb
-        .select('service_id')
-        .from(calendarDatesTable)
-        .where('date', formattedDate)
-        .andWhere('exception_type', '2');
-    })
-    .union((qb: QueryBuilder) => {
-      qb
-        .select('service_id')
-        .from(calendarDatesTable)
-        .where('date', formattedDate)
-        .andWhere('exception_type', 1);
-    });
-  return services.map((service: Service) => {
-    return service.service_id;
-  });
-}
-
-/**
  * Get route id mappings to route short name
  * @param {*} regionName
  */
