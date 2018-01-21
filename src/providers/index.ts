@@ -3,6 +3,7 @@ import winstonInstance from '../config/winston';
 import { OuluProvider } from '../providers/oulu';
 import { LahtiProvider } from '../providers/lahti';
 import { TampereProvider } from '../providers/tampere';
+import { TurkuProvider } from '../providers/turku';
 
 export interface DataProvider {
   name: string;
@@ -19,6 +20,7 @@ const dataProviders: DataProvider[] = [
   new OuluProvider(),
   new LahtiProvider(),
   new TampereProvider(),
+  new TurkuProvider(),
 ];
 
 export const statusDataMap = new Map<string, DataProviderStatus>();
