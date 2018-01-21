@@ -105,7 +105,7 @@ export async function storeTripUpdateFeed(
 
     // Try to get trip id, match to static GTFS
     const tripId = await getTripId(
-      'tampere',
+      regionName,
       routeId,
       originDepartureString,
       direction,
