@@ -1,6 +1,10 @@
+--
+-- NOTE!
+-- Replace <regionName> with actual region name / data provider region name
+--
+
 DROP TABLE IF EXISTS <regionName>_trip_update_stop_time_updates;
 DROP TABLE IF EXISTS <regionName>_trip_updates;
-
 
 --
 -- trip_updates
@@ -22,8 +26,7 @@ CREATE TABLE <regionName>_trip_updates (
 
 ALTER TABLE <regionName>_trip_updates
   ADD PRIMARY KEY trip_update_id (trip_update_id);
-  
-  
+
 --
 -- trip_update_stop_time_updates
 --
@@ -40,11 +43,9 @@ CREATE TABLE <regionName>_trip_update_stop_time_updates (
   schedule_relationship int DEFAULT NULL,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-    
 ALTER TABLE <regionName>_trip_update_stop_time_updates
   ADD PRIMARY KEY (trip_update_id,stop_id),
   ADD KEY trip_update_id (trip_update_id);	
-  
 
 ALTER TABLE <regionName>_trip_update_stop_time_updates
   ADD CONSTRAINT <regionName>_trip_update_stop_time_updates_key FOREIGN KEY (trip_update_id) REFERENCES <regionName>_trip_updates (trip_update_id) ON DELETE CASCADE;
