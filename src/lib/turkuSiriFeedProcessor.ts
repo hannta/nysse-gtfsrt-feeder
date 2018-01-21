@@ -103,7 +103,7 @@ export async function storeTripUpdateFeed(
       // Get active services, and cache them
       const tripStartDayString = moment(tripStart).format('YYYYMMDD');
       if (!activeServicesMap.has(tripStartDayString)) {
-        const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
+        const activeServices = await getActiveServiceIds(regionName, tripStart.toDate());
         activeServicesMap.set(tripStartDayString, activeServices);
       }
 
@@ -113,7 +113,7 @@ export async function storeTripUpdateFeed(
       const tripId = await getTripId(
         regionName,
         routeId,
-        moment(tripStart).format('HH:mm:ss'),
+        tripStart.toDate(),
         direction,
         activeServicesMap.get(tripStartDayString),
       );

@@ -41,7 +41,7 @@ export async function getTripStops(regionName: string, tripId: string): Promise<
 export async function getTripId(
   regionName: string,
   routeId: string,
-  originDeparture: string,
+  originDeparture: Date,
   direction: number,
   activeServices: string[],
 ): Promise<string | null> {
@@ -55,7 +55,11 @@ export async function getTripId(
     .innerJoin(stopTimesTable, `${stopTimesTable}.trip_id`, `${tripsTable}.trip_id`)
     .whereIn(`${tripsTable}.service_id`, activeServices)
     .andWhere(`${routesTable}.route_id`, routeId)
-    .andWhere(`${stopTimesTable}.departure_time`, 'like', originDeparture.substring(0, 5) + '%') // Do not try to mach seconds, as vehicle api might returns only minutes
+    .andWhere(
+      `${stopTimesTable}.departure_time`,
+      'like',
+      moment(originDeparture).format('HH:mm') + '%',
+    ) // Do not try to mach seconds, as vehicle api might returns only minutes
     .andWhere(`${tripsTable}.direction_id`, direction)
     .orderBy(`${stopTimesTable}.stop_sequence`)
     .first();

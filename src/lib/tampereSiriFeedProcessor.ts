@@ -94,20 +94,20 @@ export async function storeTripUpdateFeed(
       'monitoredVehicleJourney.framedVehicleJourneyRef.dateFrameRef',
       null,
     );
-    const originDeparture: string = lodash.get(
+    const originDepartureTime: string = lodash.get(
       serviceDelivery,
       'monitoredVehicleJourney.originAimedDepartureTime',
       null,
     );
-    const originDepartureString = originDeparture
-      ? `${originDeparture.substring(0, 2)}:${originDeparture.substring(2, 4)}:00`
+    const originDepartureTimeString = originDepartureTime
+      ? `${originDepartureTime.substring(0, 2)}:${originDepartureTime.substring(2, 4)}:00`
       : null;
 
     // Try to get trip id, match to static GTFS
     const tripId = await getTripId(
       regionName,
       routeId,
-      originDepartureString,
+      tripStart.toDate(),
       direction,
       activeServicesMap.get(tripStartDate),
     );
@@ -130,7 +130,7 @@ export async function storeTripUpdateFeed(
       trip_id: tripId,
       route_id: routeId,
       direction_id: direction,
-      trip_start_time: originDepartureString,
+      trip_start_time: originDepartureTimeString,
       trip_start_date: originDepartureDate,
       schedule_relationship: null,
       vehicle_id: lodash.get(serviceDelivery, 'monitoredVehicleJourney.vehicleRef', null),
