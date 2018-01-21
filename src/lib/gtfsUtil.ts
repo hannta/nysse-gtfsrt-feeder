@@ -166,13 +166,4 @@ export async function getRouteIdMappings(regionName: string) {
       return [route.route_short_name, route.route_id];
     }),
   );
-
-  /*
-  const routeCodeMapping: string[] = [];
-  routes.map((route: { route_short_name: string; route_id: string }) => {
-    routeCodeMapping[route.route_short_name] = route.route_id;
-  });
-
-  return routeCodeMapping;
-  */
 }
