@@ -20,8 +20,8 @@ interface ConfigSettings {
 }
 
 interface RegionConfig {
-  gtfsrtTripUpdatesUrl: string;
-  gtfsrtTripUpdatesInterval: number;
+  feedUrl: string;
+  updateInterval: number;
 }
 
 const config: ConfigSettings = {
@@ -38,20 +38,20 @@ const config: ConfigSettings = {
     debug: false,
   },
   oulu: {
-    gtfsrtTripUpdatesUrl: process.env.OULU_GTFSRT_TRIP_UPDATES_URL,
-    gtfsrtTripUpdatesInterval: 30000,
+    feedUrl: process.env.OULU_GTFSRT_TRIP_UPDATES_URL,
+    updateInterval: 30000,
   },
   lahti: {
-    gtfsrtTripUpdatesUrl: process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL,
-    gtfsrtTripUpdatesInterval: 30000,
+    feedUrl: process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL,
+    updateInterval: 30000,
   },
   tampere: {
-    gtfsrtTripUpdatesUrl: process.env.TAMPERE_UPDATES_URL,
-    gtfsrtTripUpdatesInterval: 30000,
+    feedUrl: process.env.TAMPERE_UPDATES_URL,
+    updateInterval: 30000,
   },
   turku: {
-    gtfsrtTripUpdatesUrl: process.env.TURKU_UPDATES_URL,
-    gtfsrtTripUpdatesInterval: 30000,
+    feedUrl: process.env.TURKU_UPDATES_URL,
+    updateInterval: 30000,
   },
 };
 

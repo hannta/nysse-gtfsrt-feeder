@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class LahtiProvider implements DataProvider {
   public name = 'lahti';
 
-  public updateInterval = config.lahti.gtfsrtTripUpdatesInterval;
+  public updateInterval = config.lahti.updateInterval;
 
   public async getTripUpdates() {
     const requestParams = {
       method: 'GET',
-      url: config.lahti.gtfsrtTripUpdatesUrl,
+      url: config.lahti.feedUrl,
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,
