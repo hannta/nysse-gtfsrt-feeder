@@ -57,7 +57,6 @@ export async function storeTripUpdateFeed(
 
   const tripUpdates: TripUpdateDB[] = [];
   const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
-  //const activeServicesCache: any = {};
   const activeServicesMap = new Map<string, string[]>();
 
   for (const serviceDelivery of feedData.body) {
