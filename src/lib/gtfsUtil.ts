@@ -8,6 +8,15 @@ export interface TripStop {
   stop_sequence: number;
 }
 
+interface Service {
+  service_id: string;
+}
+
+interface Route {
+  route_short_name: string;
+  route_id: string;
+}
+
 /**
  * Get stops for trip
  * @param {*} regionName
@@ -103,4 +112,67 @@ export function getGtfsCalendarDayColumnName(date: Date): string {
   weekdays[5] = 'friday';
   weekdays[6] = 'saturday';
   return weekdays[moment(date).day()];
+}
+
+/**
+ * Get day active services
+ * @param regionName
+ * @param date
+ */
+export async function getActiveServices(regionName: string, date: Date): Promise<string[]> {
+  const calendarTable = `${regionName}_calendar`;
+  const calendarDatesTable = `${regionName}_calendar_dates`;
+  const calendarDatesColumn = getGtfsCalendarDayColumnName(date);
+  const formattedDate = moment(date).format('YYYYMMDD');
+
+  const services = await knex(calendarTable)
+    .select('service_id')
+    .where('start_date', '<=', formattedDate)
+    .andWhere('end_date', '>=', formattedDate)
+    .andWhere(calendarDatesColumn, 1)
+    .whereNotIn('service_id', (qb: QueryBuilder) => {
+      qb
+        .select('service_id')
+        .from(calendarDatesTable)
+        .where('date', formattedDate)
+        .andWhere('exception_type', '2');
+    })
+    .union((qb: QueryBuilder) => {
+      qb
+        .select('service_id')
+        .from(calendarDatesTable)
+        .where('date', formattedDate)
+        .andWhere('exception_type', 1);
+    });
+  return services.map((service: Service) => {
+    return service.service_id;
+  });
+}
+
+/**
+ * Get route id mappings to route short name
+ * @param {*} regionName
+ */
+export async function getRouteIdMappings(regionName: string) {
+  const routesTable = `${regionName}_routes`;
+
+  const routes = await knex(routesTable).select(
+    `${routesTable}.route_id`,
+    `${routesTable}.route_short_name`,
+  );
+
+  return new Map<string, string>(
+    routes.map(route => {
+      return [route.route_short_name, route.route_id];
+    }),
+  );
+
+  /*
+  const routeCodeMapping: string[] = [];
+  routes.map((route: { route_short_name: string; route_id: string }) => {
+    routeCodeMapping[route.route_short_name] = route.route_id;
+  });
+
+  return routeCodeMapping;
+  */
 }
