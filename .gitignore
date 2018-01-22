@@ -237,3 +237,4 @@ node_modules
 
 .env
 dist/
+ecosystem.json
