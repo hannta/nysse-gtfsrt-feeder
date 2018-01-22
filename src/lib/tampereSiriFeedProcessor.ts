@@ -60,9 +60,37 @@ export async function storeTripUpdateFeed(
   const activeServicesMap = new Map<string, string[]>();
 
   for (const serviceDelivery of feedData.body) {
-    // Get active services, and cache them
-    const tripStart = moment(
-      serviceDelivery.monitoredVehicleJourney.framedVehicleJourneyRef.dateFrameRef,
+    // Try to parse infos
+    const tripStartDateString =
+      serviceDelivery.monitoredVehicleJourney.framedVehicleJourneyRef.dateFrameRef;
+
+    const tripStartDateTimeString =
+      serviceDelivery.monitoredVehicleJourney.originAimedDepartureTime;
+
+    const tripStartString = `${tripStartDateString} ${tripStartDateTimeString.substring(
+      0,
+      2,
+    )}:${tripStartDateTimeString.substring(2, 4)}`;
+    const tripStart = moment(tripStartString);
+
+    const routeId: string = lodash.get(
+      serviceDelivery,
+      'monitoredVehicleJourney.journeyPatternRef',
+      null,
+    );
+
+    const directionRef: string = lodash.get(
+      serviceDelivery,
+      'monitoredVehicleJourney.directionRef',
+      null,
+    );
+
+    const direction = directionRef ? parseInt(directionRef) - 1 : null;
+
+    const vehicleId: string = lodash.get(
+      serviceDelivery,
+      'monitoredVehicleJourney.vehicleRef',
+      null,
     );
 
     // Get active services, and cache them
@@ -71,37 +99,6 @@ export async function storeTripUpdateFeed(
       const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
       activeServicesMap.set(tripStartDate, activeServices);
     }
-
-    // Try to parse infos
-    const routeId: string = lodash.get(
-      serviceDelivery,
-      'monitoredVehicleJourney.journeyPatternRef',
-      null,
-    );
-    const directionRef: string = lodash.get(
-      serviceDelivery,
-      'monitoredVehicleJourney.directionRef',
-      null,
-    );
-    const direction = directionRef ? parseInt(directionRef) - 1 : null;
-    const vehicleId: string = lodash.get(
-      serviceDelivery,
-      'monitoredVehicleJourney.vehicleRef',
-      null,
-    );
-    const originDepartureDate: string = lodash.get(
-      serviceDelivery,
-      'monitoredVehicleJourney.framedVehicleJourneyRef.dateFrameRef',
-      null,
-    );
-    const originDepartureTime: string = lodash.get(
-      serviceDelivery,
-      'monitoredVehicleJourney.originAimedDepartureTime',
-      null,
-    );
-    const originDepartureTimeString = originDepartureTime
-      ? `${originDepartureTime.substring(0, 2)}:${originDepartureTime.substring(2, 4)}:00`
-      : null;
 
     // Try to get trip id, match to static GTFS
     const tripId = await getTripId(
@@ -130,8 +127,8 @@ export async function storeTripUpdateFeed(
       trip_id: tripId,
       route_id: routeId,
       direction_id: direction,
-      trip_start_time: originDepartureTimeString,
-      trip_start_date: originDepartureDate,
+      trip_start_time: tripStart.format('HH:mm:ss'),
+      trip_start_date: tripStart.format('YYYYMMDD'),
       schedule_relationship: null,
       vehicle_id: lodash.get(serviceDelivery, 'monitoredVehicleJourney.vehicleRef', null),
       vehicle_label: null,
