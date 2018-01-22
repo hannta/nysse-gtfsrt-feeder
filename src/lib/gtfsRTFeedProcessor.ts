@@ -3,7 +3,7 @@ import * as lodash from 'lodash';
 import * as GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import { TripUpdateDB, updateDatabase } from '../lib/databaseUpdater';
 import { StopTimeUpdateDB } from '../lib/databaseUpdater';
-import { getTripStops, TripStop } from '../lib/gtfsUtil';
+import { getTripStops, TripStop, getActiveServiceIds, getTripId } from '../lib/gtfsUtil';
 
 interface FeedMessage {
   header: FeedHeader;
@@ -79,10 +79,42 @@ export async function storeTripUpdateFeed(regionName: string, feedBinary: any) {
 
   const tripUpdates: TripUpdateDB[] = [];
   const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
+  const activeServicesMap = new Map<string, string[]>();
 
   // Process feed entities, create trip updates
   for (const entity of feedData.entity) {
     const tripUpdate = createTripUpdate(entity, feedTimestampString);
+
+    // If trip id missing, try to find that trip from db
+    if (!tripUpdate.trip_id) {
+      const tripStart = moment(
+        `${entity.trip_update.trip.start_date} ${entity.trip_update.trip.start_time}`,
+        'YYYYMMDD HH:mm:ss',
+      );
+
+      // Get active services, and cache them
+      const tripStartDateString = entity.trip_update.trip.start_date;
+      if (!activeServicesMap.has(tripStartDateString)) {
+        const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
+        activeServicesMap.set(tripStartDateString, activeServices);
+      }
+
+      const tripId = await getTripId(
+        regionName,
+        entity.trip_update.trip.route_id,
+        tripStart.toDate(),
+        entity.trip_update.trip.direction_id,
+        activeServicesMap.get(tripStartDateString),
+      );
+
+      if (tripId) {
+        tripUpdate.trip_id = tripId;
+      } else {
+        // No trip id, skip this trip update
+        continue;
+      }
+    }
+
     tripUpdates.push(tripUpdate);
 
     let stopIdMissing = false;
