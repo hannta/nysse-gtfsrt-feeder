@@ -28,7 +28,7 @@ interface RegionConfig {
 const config: ConfigSettings = {
   env: process.env.NODE_ENV || 'development',
   serverPort: parseInt(process.env.SERVER_PORT),
-  serverUserAgent: process.env.SERVER_PORT_USER_AGENT,
+  serverUserAgent: process.env.SERVER_USER_AGENT,
   database: {
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,
