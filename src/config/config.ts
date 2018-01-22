@@ -34,8 +34,8 @@ const config: ConfigSettings = {
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
-    poolConnectionMin: parseInt(process.env.DATABASE_CONNECTION_LIMIT_MIN),
-    poolConnectionMax: parseInt(process.env.DATABASE_CONNECTION_LIMIT_MAX),
+    poolConnectionMin: parseInt(process.env.DATABASE_CONNECTION_POOL_MIN),
+    poolConnectionMax: parseInt(process.env.DATABASE_CONNECTION_POOL_MAX),
     debug: false,
   },
   oulu: {
