@@ -40,23 +40,23 @@ const config: ConfigSettings = {
   },
   oulu: {
     feedUrl: process.env.OULU_GTFSRT_TRIP_UPDATES_URL,
-    updateInterval: 30000,
+    updateInterval: parseInt(process.env.OULU_UPDATE_INTERVAL),
   },
   lahti: {
     feedUrl: process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL,
-    updateInterval: 30000,
+    updateInterval: parseInt(process.env.LAHTI_UPDATE_INTERVAL),
   },
   tampere: {
     feedUrl: process.env.TAMPERE_UPDATES_URL,
-    updateInterval: 30000,
+    updateInterval: parseInt(process.env.TAMPERE_UPDATE_INTERVAL),
   },
   turku: {
     feedUrl: process.env.TURKU_UPDATES_URL,
-    updateInterval: 30000,
+    updateInterval: parseInt(process.env.TURKU_UPDATE_INTERVAL),
   },
   helsinki: {
     feedUrl: process.env.HELSINKI_UPDATES_URL,
-    updateInterval: 30000,
+    updateInterval: parseInt(process.env.HELSINKI_UPDATE_INTERVAL),
   },
 };
 
