@@ -40,7 +40,7 @@ CREATE TABLE <regionName>_trip_update_stop_time_updates (
   departure_delay int DEFAULT NULL,
   departure_time int DEFAULT NULL,
   departure_uncertainty int DEFAULT NULL,
-  schedule_relationship int DEFAULT NULL,
+  schedule_relationship int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE <regionName>_trip_update_stop_time_updates
