@@ -4,6 +4,7 @@ import { OuluProvider } from '../providers/oulu';
 import { LahtiProvider } from '../providers/lahti';
 import { TampereProvider } from '../providers/tampere';
 import { TurkuProvider } from '../providers/turku';
+import { HelsinkiProvider } from '../providers/helsinki';
 
 export interface DataProvider {
   name: string;
@@ -21,6 +22,7 @@ const dataProviders: DataProvider[] = [
   new LahtiProvider(),
   new TampereProvider(),
   new TurkuProvider(),
+  new HelsinkiProvider(),
 ];
 
 export const statusDataMap = new Map<string, DataProviderStatus>();

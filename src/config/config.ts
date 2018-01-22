@@ -17,6 +17,7 @@ interface ConfigSettings {
   lahti: RegionConfig;
   tampere: RegionConfig;
   turku: RegionConfig;
+  helsinki: RegionConfig;
 }
 
 interface RegionConfig {
@@ -51,6 +52,10 @@ const config: ConfigSettings = {
   },
   turku: {
     feedUrl: process.env.TURKU_UPDATES_URL,
+    updateInterval: 30000,
+  },
+  helsinki: {
+    feedUrl: process.env.HELSINKI_UPDATES_URL,
     updateInterval: 30000,
   },
 };
