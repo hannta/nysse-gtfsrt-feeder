@@ -123,9 +123,7 @@ export async function storeTripUpdateFeed(
         continue;
       }
 
-      const tripUpdateId = `${tripId}_${vehicle.vehicleref}`;
       tripUpdates.push({
-        trip_update_id: tripUpdateId,
         trip_id: tripId,
         route_id: routeId,
         direction_id: direction,
@@ -140,10 +138,10 @@ export async function storeTripUpdateFeed(
 
       // Next stop estimations
       const nextStopTimeUpdate = {
+        trip_id: tripId,
         stop_id: vehicle.next_stoppointref,
         arrival_time: vehicle.next_expectedarrivaltime,
         departure_time: vehicle.next_expecteddeparturetime,
-        trip_update_id: tripUpdateId,
       };
       tripUpdateStopTimeUpdates.push(nextStopTimeUpdate);
 
@@ -151,18 +149,18 @@ export async function storeTripUpdateFeed(
       if (vehicle.onwardcalls && vehicle.onwardcalls.length) {
         for (const call of vehicle.onwardcalls) {
           const stopTimeUpdate: StopTimeUpdateDB = {
+            trip_id: tripId,
             stop_sequence: call.visitnumber,
             stop_id: call.stoppointref,
             arrival_time: call.expectedarrivaltime,
             departure_time: call.expecteddeparturetime,
-            trip_update_id: tripUpdateId,
           };
           tripUpdateStopTimeUpdates.push(stopTimeUpdate);
         }
       }
 
       // Add missing stop_sequence values
-      const tripStops = await getTripStops(regionName, tripUpdateId);
+      const tripStops = await getTripStops(regionName, tripId);
       for (const stopTimeUpdate of tripUpdateStopTimeUpdates) {
         if (!stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_id) {
           const stop = tripStops.find((stop: TripStop) => {

@@ -10,7 +10,6 @@ DROP TABLE IF EXISTS <regionName>_trip_updates;
 -- trip_updates
 --
 CREATE TABLE <regionName>_trip_updates (
-  trip_update_id varchar(64) NOT NULL,
   trip_id varchar(75) DEFAULT NULL,
   route_id varchar(75) DEFAULT NULL,
   direction_id tinyint(4) DEFAULT NULL,
@@ -25,13 +24,13 @@ CREATE TABLE <regionName>_trip_updates (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE <regionName>_trip_updates
-  ADD PRIMARY KEY trip_update_id (trip_update_id);
+  ADD PRIMARY KEY trip_id (trip_id);
 
 --
 -- trip_update_stop_time_updates
 --
 CREATE TABLE <regionName>_trip_update_stop_time_updates (
-  trip_update_id varchar(64) NOT NULL,
+  trip_id varchar(75) NOT NULL,
   stop_sequence int(11) DEFAULT NULL,
   stop_id varchar(20) DEFAULT NULL,
   arrival_delay int DEFAULT NULL,
@@ -44,8 +43,8 @@ CREATE TABLE <regionName>_trip_update_stop_time_updates (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE <regionName>_trip_update_stop_time_updates
-  ADD PRIMARY KEY (trip_update_id,stop_id),
-  ADD KEY trip_update_id (trip_update_id);	
+  ADD PRIMARY KEY (trip_id,stop_id),
+  ADD KEY trip_id (trip_id);	
 
 ALTER TABLE <regionName>_trip_update_stop_time_updates
-  ADD CONSTRAINT <regionName>_trip_update_stop_time_updates_key FOREIGN KEY (trip_update_id) REFERENCES <regionName>_trip_updates (trip_update_id) ON DELETE CASCADE;
+  ADD CONSTRAINT <regionName>_trip_update_stop_time_updates_key FOREIGN KEY (trip_id) REFERENCES <regionName>_trip_updates (trip_id) ON DELETE CASCADE;

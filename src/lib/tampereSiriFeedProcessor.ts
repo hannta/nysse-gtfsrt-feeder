@@ -121,9 +121,7 @@ export async function storeTripUpdateFeed(
       continue;
     }
 
-    const tripUpdateId = `${tripId}_${vehicleId}`;
     tripUpdates.push({
-      trip_update_id: tripUpdateId,
       trip_id: tripId,
       route_id: routeId,
       direction_id: direction,
@@ -138,7 +136,7 @@ export async function storeTripUpdateFeed(
 
     // Process stop time updates
     for (const onwardCall of onwardCalls) {
-      tripUpdateStopTimeUpdates.push(createStopTimeUpdate(onwardCall, tripUpdateId));
+      tripUpdateStopTimeUpdates.push(createStopTimeUpdate(tripId, onwardCall));
     }
   }
 
@@ -151,16 +149,12 @@ export async function storeTripUpdateFeed(
  * @param {*} call
  * @param {*} tripUpdateId
  */
-function createStopTimeUpdate(
-  onwardCall: TampereOnwardCall,
-  tripUpdateId: string,
-): StopTimeUpdateDB {
+function createStopTimeUpdate(tripId: string, onwardCall: TampereOnwardCall): StopTimeUpdateDB {
   const stopRefUrl = lodash.get(onwardCall, 'stopPointRef', null); // Kind of hack to parse stop id form url
   const expectedArrival = lodash.get(onwardCall, 'expectedArrivalTime', null);
   const expectedDeparture = lodash.get(onwardCall, 'expectedDepartureTime', null);
-
   return {
-    trip_update_id: tripUpdateId,
+    trip_id: tripId,
     stop_sequence: lodash.get(onwardCall, 'order', null),
     stop_id: stopRefUrl ? stopRefUrl.substr(stopRefUrl.lastIndexOf('/') + 1) : undefined,
     arrival_time: expectedArrival ? moment(expectedArrival).unix() : undefined,

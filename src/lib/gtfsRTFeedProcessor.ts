@@ -123,10 +123,7 @@ export async function storeTripUpdateFeed(regionName: string, feedBinary: any) {
     // Create stop time updates
     tripUpdateStopTimeUpdates.push(
       ...entity.trip_update.stop_time_update.map(stopTimeUpdate => {
-        const tripUpdateStopTimeUpdate = createStopTimeUpdate(
-          stopTimeUpdate,
-          tripUpdate.trip_update_id,
-        );
+        const tripUpdateStopTimeUpdate = createStopTimeUpdate(tripUpdate.trip_id, stopTimeUpdate);
 
         stopIdMissing = !tripUpdateStopTimeUpdate.stop_id ? true : stopIdMissing;
         stopSequenceMissing = !tripUpdateStopTimeUpdate.stop_sequence ? true : stopSequenceMissing;
@@ -186,7 +183,6 @@ function addMissingStoTimeUpdateInfos(
 function createTripUpdate(entity: FeedEntity, recorded: string): TripUpdateDB {
   const tripUpdate = entity.trip_update;
   return {
-    trip_update_id: entity.id,
     trip_id: tripUpdate.trip.trip_id,
     route_id: tripUpdate.trip.route_id,
     direction_id: tripUpdate.trip.direction_id,
@@ -206,10 +202,11 @@ function createTripUpdate(entity: FeedEntity, recorded: string): TripUpdateDB {
  * @param {*} tripUpdateId
  */
 function createStopTimeUpdate(
+  tripId: string,
   stopTimeUpdateData: StopTimeUpdate,
-  tripUpdateId: string,
 ): StopTimeUpdateDB {
   return {
+    trip_id: tripId,
     stop_sequence: stopTimeUpdateData.stop_sequence,
     stop_id: stopTimeUpdateData.stop_id,
     arrival_delay: lodash.get(stopTimeUpdateData, 'arrival.delay', null),
@@ -219,6 +216,5 @@ function createStopTimeUpdate(
     departure_time: lodash.get(stopTimeUpdateData, 'departure.time.low', null),
     departure_uncertainty: lodash.get(stopTimeUpdateData, 'departure.uncertainty', null),
     schedule_relationship: stopTimeUpdateData.schedule_relationship,
-    trip_update_id: tripUpdateId,
   };
 }
