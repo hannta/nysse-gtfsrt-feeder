@@ -9,7 +9,7 @@ export class LahtiProvider implements DataProvider {
   public updateInterval = config.lahti.updateInterval;
 
   public async getTripUpdates() {
-    const requestParams = {
+    const requestConfig: AxiosRequestConfig = {
       method: 'GET',
       url: config.lahti.feedUrl,
       responseType: 'arraybuffer',
@@ -19,7 +19,7 @@ export class LahtiProvider implements DataProvider {
       timeout: 5000,
     };
 
-    const resp = await axios.request(requestParams);
+    const resp = await axios.request(requestConfig);
     return storeTripUpdateFeed(this.name, resp.data, false);
   }
 }
