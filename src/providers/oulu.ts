@@ -20,6 +20,6 @@ export class OuluProvider implements DataProvider {
     };
 
     const resp = await axios.request(requestConfig);
-    return storeTripUpdateFeed(this.name, resp.data);
+    return storeTripUpdateFeed(this.name, resp.data, false);
   }
 }

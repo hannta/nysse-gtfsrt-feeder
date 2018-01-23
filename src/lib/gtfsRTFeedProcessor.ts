@@ -70,7 +70,11 @@ interface StopTimeEvent {
  * @param region
  * @param feedBinary
  */
-export async function storeTripUpdateFeed(regionName: string, feedBinary: any) {
+export async function storeTripUpdateFeed(
+  regionName: string,
+  feedBinary: any,
+  getTripAlwaysFromDB?: boolean,
+) {
   const feedData: FeedMessage = GtfsRealtimeBindings.FeedMessage.decode(feedBinary);
 
   const feedTimestampString = moment
@@ -85,8 +89,17 @@ export async function storeTripUpdateFeed(regionName: string, feedBinary: any) {
   for (const entity of feedData.entity) {
     const tripUpdate = createTripUpdate(entity, feedTimestampString);
 
-    // If trip id missing, try to find that trip from db
-    if (!tripUpdate.trip_id) {
+    // If getTripAlwaysFromDB true or trip id missing, try to find trip from db
+    if (getTripAlwaysFromDB || !tripUpdate.trip_id) {
+      if (
+        !entity.trip_update.trip.start_date ||
+        !entity.trip_update.trip.start_time ||
+        !entity.trip_update.trip.route_id
+      ) {
+        // If we do not have enough information to get trip from db, skip this update
+        continue;
+      }
+
       const tripStart = moment(
         `${entity.trip_update.trip.start_date} ${entity.trip_update.trip.start_time}`,
         'YYYYMMDD HH:mm:ss',

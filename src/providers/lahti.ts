@@ -20,6 +20,6 @@ export class LahtiProvider implements DataProvider {
     };
 
     const resp = await axios.request(requestParams);
-    return storeTripUpdateFeed(this.name, resp.data);
+    return storeTripUpdateFeed(this.name, resp.data, false);
   }
 }
