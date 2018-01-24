@@ -18,6 +18,10 @@ interface ConfigSettings {
   tampere: RegionConfig;
   turku: RegionConfig;
   helsinki: RegionConfig;
+  kuopio: RegionConfig;
+  joensuu: RegionConfig;
+  lappeenranta: RegionConfig;
+  jyvaskyla: RegionConfig;
 }
 
 interface RegionConfig {
@@ -57,6 +61,22 @@ const config: ConfigSettings = {
   helsinki: {
     feedUrl: process.env.HELSINKI_UPDATES_URL,
     updateInterval: parseInt(process.env.HELSINKI_UPDATE_INTERVAL),
+  },
+  kuopio: {
+    feedUrl: process.env.KUOPIO_UPDATES_URL,
+    updateInterval: parseInt(process.env.KUOPIO_UPDATE_INTERVAL),
+  },
+  joensuu: {
+    feedUrl: process.env.JOENSUU_UPDATES_URL,
+    updateInterval: parseInt(process.env.JOENSUU_UPDATE_INTERVAL),
+  },
+  lappeenranta: {
+    feedUrl: process.env.LAPPEENRANTA_UPDATES_URL,
+    updateInterval: parseInt(process.env.LAPPEENRANTA_UPDATE_INTERVAL),
+  },
+  jyvaskyla: {
+    feedUrl: process.env.JYVASKYLA_UPDATES_URL,
+    updateInterval: parseInt(process.env.JYVASKYLA_UPDATE_INTERVAL),
   },
 };
 
