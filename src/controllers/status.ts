@@ -13,6 +13,10 @@ export class StatusController {
   }
 
   public async getStatus(req: Request, res: Response, next: NextFunction) {
-    res.json([...statusDataMap]); // Improve formatting!
+    res.json({
+      providers: Array.from(statusDataMap.keys()).map(key => {
+        return { [key]: statusDataMap.get(key) };
+      }),
+    });
   }
 }
