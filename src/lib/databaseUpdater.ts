@@ -3,7 +3,7 @@ import { knex } from '../config/database';
 
 const TRIP_UPDATES_TABLE = 'trip_updates';
 const TRIP_UPDATE_STOP_TIME_UPDATES_TABLE = 'trip_update_stop_time_updates';
-const DELETE_RECORDS_OLDER_THAN = 1800; // Seconds (30 min)
+const KEEP_OLD_RECORDS_DEFAULT = 1800; // Seconds (30 min)
 
 export interface TripUpdateDB {
   trip_id: string;
@@ -41,6 +41,7 @@ export async function updateDatabase(
   regionName: string,
   tripUpdates: TripUpdateDB[],
   tripUpdateStopTimeUpdates: StopTimeUpdateDB[],
+  keepOldRecords?: number,
 ) {
   const tripUpdatesTable = `${regionName}_${TRIP_UPDATES_TABLE}`;
   const tripUpdateStopTimeUpdatesTable = `${regionName}_${TRIP_UPDATE_STOP_TIME_UPDATES_TABLE}`;
@@ -53,7 +54,7 @@ export async function updateDatabase(
     await insertOrUpdate(tripUpdateStopTimeUpdatesTable, tripUpdateStopTimeUpdates);
   }
 
-  await deleteOldData(tripUpdatesTable);
+  await deleteOldData(tripUpdatesTable, keepOldRecords);
 }
 
 /**
@@ -78,9 +79,9 @@ async function insertOrUpdate(tableName: string, data: TripUpdateDB[] | StopTime
  * Delete old trip updates
  * @param tripUpdatesTable
  */
-async function deleteOldData(tripUpdatesTable: string) {
+async function deleteOldData(tripUpdatesTable: string, keepOldRecords = KEEP_OLD_RECORDS_DEFAULT) {
   const olderThan = moment()
-    .subtract(DELETE_RECORDS_OLDER_THAN, 'seconds')
+    .subtract(keepOldRecords, 'seconds')
     .format('YYYY-MM-DD HH:mm:ss');
 
   return knex(tripUpdatesTable)

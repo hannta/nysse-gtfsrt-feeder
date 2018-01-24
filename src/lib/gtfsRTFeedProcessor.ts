@@ -5,6 +5,22 @@ import { TripUpdateDB, updateDatabase } from '../lib/databaseUpdater';
 import { StopTimeUpdateDB } from '../lib/databaseUpdater';
 import { getTripStops, TripStop, getActiveServiceIds, getTripId } from '../lib/gtfsUtil';
 
+/**
+ * GTFS-RT feed processor config options
+ */
+export interface GtfsRTFeedProcessorConfig {
+  /** If trip id is missing, try to get trip form database */
+  getMissingTripFromDB?: boolean;
+  /** Get trip id always from database */
+  getTripAlwaysFromDB?: boolean;
+  /** If stop id is missing, try to get that from database */
+  tryToFixMissingStopId?: boolean;
+  /** If stop sequence is missing, try to get that from database */
+  tryToFixMissingStopSequence?: boolean;
+  /** How old records to keep, seconds  */
+  keepOldRecords?: number;
+}
+
 interface FeedMessage {
   header: FeedHeader;
   entity?: FeedEntity[];
@@ -73,7 +89,7 @@ interface StopTimeEvent {
 export async function storeTripUpdateFeed(
   regionName: string,
   feedBinary: any,
-  getTripAlwaysFromDB?: boolean,
+  config: GtfsRTFeedProcessorConfig,
 ) {
   const feedData: FeedMessage = GtfsRealtimeBindings.FeedMessage.decode(feedBinary);
 
@@ -89,8 +105,8 @@ export async function storeTripUpdateFeed(
   for (const entity of feedData.entity) {
     const tripUpdate = createTripUpdate(entity, feedTimestampString);
 
-    // If getTripAlwaysFromDB true or trip id missing, try to find trip from db
-    if (getTripAlwaysFromDB || !tripUpdate.trip_id) {
+    // Based on config, try to find trip from db
+    if (config.getTripAlwaysFromDB || (!tripUpdate.trip_id && config.getMissingTripFromDB)) {
       if (
         !entity.trip_update.trip.start_date ||
         !entity.trip_update.trip.start_time ||
@@ -146,15 +162,18 @@ export async function storeTripUpdateFeed(
     );
 
     // Add missing stop_id and stop_sequence values for stop time updates
-    if (stopIdMissing || stopSequenceMissing) {
+    if (
+      (stopIdMissing && config.tryToFixMissingStopId) ||
+      (stopSequenceMissing && config.tryToFixMissingStopSequence)
+    ) {
       const tripAllStops = await getTripStops(regionName, tripUpdate.trip_id);
       if (tripAllStops && tripAllStops.length > 0) {
-        addMissingStoTimeUpdateInfos(tripUpdateStopTimeUpdates, tripAllStops);
+        addMissingStoTimeUpdateInfos(tripUpdateStopTimeUpdates, tripAllStops, config);
       }
     }
   }
 
-  await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates);
+  await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates, config.keepOldRecords);
   return tripUpdates.length;
 }
 
@@ -166,9 +185,10 @@ export async function storeTripUpdateFeed(
 function addMissingStoTimeUpdateInfos(
   tripUpdateStopTimeUpdates: StopTimeUpdateDB[],
   tripAllStops: TripStop[],
+  config: GtfsRTFeedProcessorConfig,
 ) {
   for (const stopTimeUpdate of tripUpdateStopTimeUpdates) {
-    if (!stopTimeUpdate.stop_id && stopTimeUpdate.stop_sequence) {
+    if (config.tryToFixMissingStopId && !stopTimeUpdate.stop_id && stopTimeUpdate.stop_sequence) {
       // Add stop_id if missing
       const stop = tripAllStops.find((stop: TripStop) => {
         return stop.stop_sequence === stopTimeUpdate.stop_sequence;
@@ -176,7 +196,11 @@ function addMissingStoTimeUpdateInfos(
       if (stop) {
         stopTimeUpdate.stop_id = stop.stop_id;
       }
-    } else if (!stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_id) {
+    } else if (
+      config.tryToFixMissingStopSequence &&
+      !stopTimeUpdate.stop_sequence &&
+      stopTimeUpdate.stop_id
+    ) {
       // Add stop_sequence if missing
       const stop = tripAllStops.find((stop: TripStop) => {
         return stop.stop_id === stopTimeUpdate.stop_id;

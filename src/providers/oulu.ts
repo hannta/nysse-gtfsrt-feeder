@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from '../config/config';
-import { storeTripUpdateFeed } from '../lib/gtfsRTFeedProcessor';
+import { storeTripUpdateFeed, GtfsRTFeedProcessorConfig } from '../lib/gtfsRTFeedProcessor';
 import { DataProvider } from '../providers';
 
 export class OuluProvider implements DataProvider {
@@ -20,6 +20,12 @@ export class OuluProvider implements DataProvider {
     };
 
     const resp = await axios.request(requestConfig);
-    return storeTripUpdateFeed(this.name, resp.data, false);
+
+    const gtfsRTFeedProcessorConfig: GtfsRTFeedProcessorConfig = {
+      getMissingTripFromDB: true,
+      tryToFixMissingStopId: true,
+    };
+
+    return storeTripUpdateFeed(this.name, resp.data, gtfsRTFeedProcessorConfig);
   }
 }
