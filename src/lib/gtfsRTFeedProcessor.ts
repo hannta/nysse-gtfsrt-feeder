@@ -1,8 +1,7 @@
 import * as moment from 'moment';
 import * as lodash from 'lodash';
 import * as GtfsRealtimeBindings from 'gtfs-realtime-bindings';
-import { TripUpdateDB, updateDatabase } from '../lib/databaseUpdater';
-import { StopTimeUpdateDB } from '../lib/databaseUpdater';
+import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from '../lib/databaseUpdater';
 import { getTripStops, TripStop, getActiveServiceIds, getTripId } from '../lib/gtfsUtil';
 
 /**

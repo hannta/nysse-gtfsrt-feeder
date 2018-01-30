@@ -98,7 +98,7 @@ export async function storeTripUpdateFeed(
       const vehicle: TurkuMonitoredVehicle = vehicles[vehicleProp];
 
       const tripStart = moment.unix(vehicle.originaimeddeparturetime);
-      const direction = parseInt(vehicle.directionref) === 2 ? 0 : 1; // Turku uses the opposite logic from HSL or Tampere: 2 is GTFS 0 and 1 is GTFS 1,
+      const direction = parseInt(vehicle.directionref, 10) === 2 ? 0 : 1; // Turku uses the opposite logic from HSL or Tampere: 2 is GTFS 0 and 1 is GTFS 1,
 
       // Get active services, and cache them
       const tripStartDayString = moment(tripStart).format('YYYYMMDD');
