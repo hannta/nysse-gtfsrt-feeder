@@ -85,7 +85,7 @@ export async function storeTripUpdateFeed(
       null,
     );
 
-    const direction = directionRef ? parseInt(directionRef) - 1 : null;
+    const direction = directionRef ? parseInt(directionRef, 10) - 1 : null;
 
     const vehicleId: string = lodash.get(
       serviceDelivery,
