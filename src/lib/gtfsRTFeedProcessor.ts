@@ -92,6 +92,10 @@ export async function storeTripUpdateFeed(
 ) {
   const feedData: FeedMessage = GtfsRealtimeBindings.FeedMessage.decode(feedBinary);
 
+  if (!feedData || !feedData.entity) {
+    throw new Error('No feed data');
+  }
+
   const feedTimestampString = moment
     .unix(feedData.header.timestamp.low)
     .format('YYYY-MM-DD HH:mm:ss');
@@ -102,6 +106,11 @@ export async function storeTripUpdateFeed(
 
   // Process feed entities, create trip updates
   for (const entity of feedData.entity) {
+    if (!entity || !entity.trip_update || !entity.trip_update.trip) {
+      // No data, skip
+      continue;
+    }
+
     const tripUpdate = createTripUpdate(entity, feedTimestampString);
 
     // Based on config, try to find trip from db
@@ -127,12 +136,17 @@ export async function storeTripUpdateFeed(
         activeServicesMap.set(tripStartDateString, activeServices);
       }
 
+      const activeServicesDay = activeServicesMap.get(tripStartDateString);
+      if (!activeServicesDay) {
+        continue;
+      }
+
       const tripId = await getTripId(
         regionName,
         entity.trip_update.trip.route_id,
         tripStart.toDate(),
-        entity.trip_update.trip.direction_id,
-        activeServicesMap.get(tripStartDateString),
+        entity.trip_update.trip.direction_id || 0,
+        activeServicesDay,
       );
 
       if (tripId) {
@@ -148,17 +162,21 @@ export async function storeTripUpdateFeed(
     let stopIdMissing = false;
     let stopSequenceMissing = false;
 
-    // Create stop time updates
-    tripUpdateStopTimeUpdates.push(
-      ...entity.trip_update.stop_time_update.map(stopTimeUpdate => {
-        const tripUpdateStopTimeUpdate = createStopTimeUpdate(tripUpdate.trip_id, stopTimeUpdate);
+    // Create stop time updates, if exists
+    if (entity.trip_update.stop_time_update) {
+      tripUpdateStopTimeUpdates.push(
+        ...entity.trip_update.stop_time_update.map(stopTimeUpdate => {
+          const tripUpdateStopTimeUpdate = createStopTimeUpdate(tripUpdate.trip_id, stopTimeUpdate);
 
-        stopIdMissing = !tripUpdateStopTimeUpdate.stop_id ? true : stopIdMissing;
-        stopSequenceMissing = !tripUpdateStopTimeUpdate.stop_sequence ? true : stopSequenceMissing;
+          stopIdMissing = !tripUpdateStopTimeUpdate.stop_id ? true : stopIdMissing;
+          stopSequenceMissing = !tripUpdateStopTimeUpdate.stop_sequence
+            ? true
+            : stopSequenceMissing;
 
-        return tripUpdateStopTimeUpdate;
-      }),
-    );
+          return tripUpdateStopTimeUpdate;
+        }),
+      );
+    }
 
     // Add missing stop_id and stop_sequence values for stop time updates
     if (
@@ -219,15 +237,15 @@ function addMissingStoTimeUpdateInfos(
 function createTripUpdate(entity: FeedEntity, recorded: string): TripUpdateDB {
   const tripUpdate = entity.trip_update;
   return {
-    trip_id: tripUpdate.trip.trip_id,
-    route_id: tripUpdate.trip.route_id,
-    direction_id: tripUpdate.trip.direction_id,
-    trip_start_time: tripUpdate.trip.start_time,
-    trip_start_date: tripUpdate.trip.start_date,
-    schedule_relationship: tripUpdate.trip.schedule_relationship,
-    vehicle_id: lodash.get(tripUpdate, 'vehicle.id', null),
-    vehicle_label: lodash.get(tripUpdate, 'vehicle.label', null),
-    vehicle_license_plate: lodash.get(tripUpdate, 'vehicle.license_plate', null),
+    trip_id: tripUpdate!.trip.trip_id || 'a',
+    route_id: tripUpdate!.trip.route_id,
+    direction_id: tripUpdate!.trip.direction_id,
+    trip_start_time: tripUpdate!.trip.start_time,
+    trip_start_date: tripUpdate!.trip.start_date,
+    schedule_relationship: tripUpdate!.trip.schedule_relationship,
+    vehicle_id: lodash.get(tripUpdate, 'vehicle.id', undefined),
+    vehicle_label: lodash.get(tripUpdate, 'vehicle.label', undefined),
+    vehicle_license_plate: lodash.get(tripUpdate, 'vehicle.license_plate', undefined),
     recorded,
   };
 }
