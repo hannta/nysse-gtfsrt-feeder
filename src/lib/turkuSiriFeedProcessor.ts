@@ -108,6 +108,12 @@ export async function storeTripUpdateFeed(
       }
 
       const routeId = routeIdMap.get(vehicle.lineref);
+      const activeServicesDay = activeServicesMap.get(tripStartDayString);
+
+      if (!routeId || !activeServicesDay) {
+        // Unable to get route id or activeServicesDay, skip this vehicle
+        continue;
+      }
 
       // Try to get trip_id, match to static GTFS
       const tripId = await getTripId(
@@ -115,7 +121,7 @@ export async function storeTripUpdateFeed(
         routeId,
         tripStart.toDate(),
         direction,
-        activeServicesMap.get(tripStartDayString),
+        activeServicesDay,
       );
 
       if (!tripId) {
@@ -129,10 +135,10 @@ export async function storeTripUpdateFeed(
         direction_id: direction,
         trip_start_date: moment(tripStart).format('YYYYMMDD'),
         trip_start_time: moment(tripStart).format('HH:mm:ss'),
-        schedule_relationship: null,
+        schedule_relationship: undefined,
         vehicle_id: vehicle.vehicleref,
-        vehicle_label: null,
-        vehicle_license_plate: null,
+        vehicle_label: undefined,
+        vehicle_license_plate: undefined,
         recorded: moment.unix(vehicle.recordedattime).format('YYYY-MM-DD HH:mm:ss'),
       });
 
