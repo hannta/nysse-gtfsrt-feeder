@@ -5,6 +5,7 @@ import { DataProvider } from '../providers';
 
 export class TampereProvider implements DataProvider {
   public name = 'tampere';
+
   public updateInterval = config.tampere.updateInterval;
 
   public async getTripUpdates() {
