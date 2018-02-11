@@ -11,27 +11,27 @@ interface TampereSiriData {
 interface TampereServiceDelivery {
   recordedAtTime: string;
   validUntilTime: string;
-  monitoredVehicleJourney?: TampereMonitoredVehicleJourney;
+  monitoredVehicleJourney: TampereMonitoredVehicleJourney;
 }
 
 interface TampereMonitoredVehicleJourney {
-  lineRef?: string;
-  directionRef?: string;
-  framedVehicleJourneyRef?: TampereFramedVehicleJourneyRef;
-  operatorRef?: string;
+  lineRef: string;
+  directionRef: string;
+  framedVehicleJourneyRef: TampereFramedVehicleJourneyRef;
+  operatorRef: string;
   bearing?: string;
   delay?: string;
-  vehicleRef?: string;
+  vehicleRef: string;
   journeyPatternRef?: string;
-  originShortName?: string;
-  destinationShortName?: string;
+  originShortName: string;
+  destinationShortName: string;
   speed?: string;
-  originAimedDepartureTime?: string;
+  originAimedDepartureTime: string;
   onwardCalls?: TampereOnwardCall[];
 }
 
 interface TampereFramedVehicleJourneyRef {
-  dateFrameRef?: string;
+  dateFrameRef: string;
   datedVehicleJourneyRef: string;
 }
 
@@ -85,7 +85,7 @@ export async function storeTripUpdateFeed(
       null,
     );
 
-    const direction = directionRef ? parseInt(directionRef, 10) - 1 : null;
+    const direction = directionRef ? parseInt(directionRef, 10) - 1 : 0;
 
     const vehicleId: string = lodash.get(
       serviceDelivery,
@@ -100,13 +100,19 @@ export async function storeTripUpdateFeed(
       activeServicesMap.set(tripStartDate, activeServices);
     }
 
+    const activeServicesDay = activeServicesMap.get(tripStartDate);
+    if (!activeServicesDay) {
+      // Failed to get active services, skip
+      continue;
+    }
+
     // Try to get trip id, match to static GTFS
     const tripId = await getTripId(
       regionName,
       routeId,
       tripStart.toDate(),
       direction,
-      activeServicesMap.get(tripStartDate),
+      activeServicesDay,
     );
 
     // Get onward calls, stop time updates
@@ -127,10 +133,10 @@ export async function storeTripUpdateFeed(
       direction_id: direction,
       trip_start_time: tripStart.format('HH:mm:ss'),
       trip_start_date: tripStart.format('YYYYMMDD'),
-      schedule_relationship: null,
+      schedule_relationship: undefined,
       vehicle_id: lodash.get(serviceDelivery, 'monitoredVehicleJourney.vehicleRef', null),
-      vehicle_label: null,
-      vehicle_license_plate: null,
+      vehicle_label: undefined,
+      vehicle_license_plate: undefined,
       recorded: moment(serviceDelivery.recordedAtTime).format('YYYY-MM-DD HH:mm:ss'),
     });
 
