@@ -87,12 +87,6 @@ export async function storeTripUpdateFeed(
 
     const direction = directionRef ? parseInt(directionRef, 10) - 1 : 0;
 
-    const vehicleId: string = lodash.get(
-      serviceDelivery,
-      'monitoredVehicleJourney.vehicleRef',
-      null,
-    );
-
     // Get active services, and cache them
     const tripStartDate = tripStart.format('YYYYMMDD');
     if (!activeServicesMap.has(tripStartDate)) {

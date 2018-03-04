@@ -1,5 +1,4 @@
 import * as winston from 'winston';
-import * as moment from 'moment';
 import config from './config';
 
 export default new winston.Logger({

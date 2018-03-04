@@ -1,6 +1,7 @@
 import App from './app';
+import winstonInstance from './config/winston';
 import config from './config/config';
 
 App.listen(config.serverPort, () => {
-  console.info(`Server started on port ${config.serverPort} (${config.env})`);
+  winstonInstance.info(`Server started on port ${config.serverPort} (${config.env})`);
 });

@@ -5,7 +5,7 @@ import { statusDataMap } from '../providers';
  * Simple status controller
  */
 export class StatusController {
-  router: Router;
+  public router: Router;
 
   constructor() {
     this.router = Router();

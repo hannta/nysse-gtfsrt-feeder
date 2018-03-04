@@ -1,15 +1,10 @@
 import * as moment from 'moment';
 import { QueryBuilder } from 'knex';
 import { knex } from '../config/database';
-import { TripUpdateDB } from '../lib/databaseUpdater';
 
 export interface TripStop {
   stop_id: string;
   stop_sequence: number;
-}
-
-interface Service {
-  service_id: string;
 }
 
 interface Route {

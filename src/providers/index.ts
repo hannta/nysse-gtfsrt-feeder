@@ -5,10 +5,10 @@ import { LahtiProvider } from '../providers/lahti';
 import { TampereProvider } from '../providers/tampere';
 import { TurkuProvider } from '../providers/turku';
 import { HelsinkiProvider } from '../providers/helsinki';
-import { KuopioProvider } from '../providers/kuopio';
-import { JoensuuProvider } from '../providers/joensuu';
-import { JyvaskylaProvider } from '../providers/jyvaskyla';
-import { LappeenrantaProvider } from '../providers/lappeenranta';
+// import { KuopioProvider } from '../providers/kuopio';
+// import { JoensuuProvider } from '../providers/joensuu';
+// import { JyvaskylaProvider } from '../providers/jyvaskyla';
+// import { LappeenrantaProvider } from '../providers/lappeenranta';
 
 export interface DataProvider {
   name: string;
@@ -37,7 +37,7 @@ export const statusDataMap = new Map<string, DataProviderStatus>();
 
 export async function startDataProviders() {
   for (const dataProvider of dataProviders) {
-    console.info(`Starting data provider ${dataProvider.name}`);
+    winstonInstance.info(`Starting data provider ${dataProvider.name}`);
 
     const getData = async () => {
       try {
