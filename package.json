@@ -14,13 +14,13 @@
     "axios": "^0.18.0",
     "body-parser": "^1.18.2",
     "boom": "^7.1.1",
-    "dotenv": "^5.0.0",
+    "dotenv": "^5.0.1",
     "express": "^4.16.2",
     "gtfs-realtime-bindings": "^0.0.4",
     "knex": "^0.14.4",
     "lodash": "^4.17.5",
     "mariasql": "^0.2.6",
-    "moment": "^2.20.1",
+    "moment": "^2.21.0",
     "winston": "^2.4.0"
   },
   "devDependencies": {
@@ -32,8 +32,8 @@
     "@types/node": "^8.5.8",
     "@types/winston": "^2.3.8",
     "tslint": "^5.9.1",
-    "tslint-config-prettier": "^1.7.0",
+    "tslint-config-prettier": "^1.9.0",
     "tslint-config-standard": "^7.0.0",
-    "typescript": "^2.7.1"
+    "typescript": "^2.7.2"
   }
 }
