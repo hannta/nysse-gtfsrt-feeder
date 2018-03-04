@@ -131,7 +131,7 @@ export async function getRouteIdMappings(regionName: string) {
   );
 
   return new Map<string, string>(
-    routes.map(route => {
+    routes.map((route: Route) => {
       return [route.route_short_name, route.route_id];
     }),
   );
