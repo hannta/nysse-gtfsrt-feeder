@@ -169,8 +169,8 @@ export async function storeTripUpdateFeed(
       const tripStops = await getTripStops(regionName, tripId);
       for (const stopTimeUpdate of tripUpdateStopTimeUpdates) {
         if (!stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_id) {
-          const stop = tripStops.find((stop: TripStop) => {
-            return stop.stop_id === stopTimeUpdate.stop_id;
+          const stop = tripStops.find((tripStop: TripStop) => {
+            return tripStop.stop_id === stopTimeUpdate.stop_id;
           });
           if (stop) {
             stopTimeUpdate.stop_sequence = stop.stop_sequence;

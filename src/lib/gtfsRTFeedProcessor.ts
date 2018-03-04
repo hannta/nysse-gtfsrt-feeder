@@ -207,8 +207,8 @@ function addMissingStoTimeUpdateInfos(
   for (const stopTimeUpdate of tripUpdateStopTimeUpdates) {
     if (config.tryToFixMissingStopId && !stopTimeUpdate.stop_id && stopTimeUpdate.stop_sequence) {
       // Add stop_id if missing
-      const stop = tripAllStops.find((stop: TripStop) => {
-        return stop.stop_sequence === stopTimeUpdate.stop_sequence;
+      const stop = tripAllStops.find((tripStop: TripStop) => {
+        return tripStop.stop_sequence === stopTimeUpdate.stop_sequence;
       });
       if (stop) {
         stopTimeUpdate.stop_id = stop.stop_id;
@@ -219,8 +219,8 @@ function addMissingStoTimeUpdateInfos(
       stopTimeUpdate.stop_id
     ) {
       // Add stop_sequence if missing
-      const stop = tripAllStops.find((stop: TripStop) => {
-        return stop.stop_id === stopTimeUpdate.stop_id;
+      const stop = tripAllStops.find((tripStop: TripStop) => {
+        return tripStop.stop_id === stopTimeUpdate.stop_id;
       });
       if (stop) {
         stopTimeUpdate.stop_sequence = stop.stop_sequence;
