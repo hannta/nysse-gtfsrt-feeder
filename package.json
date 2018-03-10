@@ -21,7 +21,7 @@
     "lodash": "^4.17.5",
     "mariasql": "^0.2.6",
     "moment": "^2.21.0",
-    "winston": "^2.4.0"
+    "winston": "^2.4.1"
   },
   "devDependencies": {
     "@types/boom": "^7.1.1",
