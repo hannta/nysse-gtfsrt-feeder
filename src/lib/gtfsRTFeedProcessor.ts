@@ -110,54 +110,18 @@ export async function storeTripUpdateFeed(
       // No data, skip
       continue;
     }
+    const tripId =
+      config.getTripAlwaysFromDB ||
+      (!entity.trip_update.trip.trip_id && config.getMissingTripFromDB)
+        ? await getTripIdFromDb(entity, regionName, activeServicesMap)
+        : entity.trip_update.trip.trip_id;
 
-    const tripUpdate = createTripUpdate(entity, feedTimestampString);
-
-    // Based on config, try to find trip from db
-    if (config.getTripAlwaysFromDB || (!tripUpdate.trip_id && config.getMissingTripFromDB)) {
-      if (
-        !entity.trip_update.trip.start_date ||
-        !entity.trip_update.trip.start_time ||
-        !entity.trip_update.trip.route_id
-      ) {
-        // If we do not have enough information to get trip from db, skip this update
-        continue;
-      }
-
-      const tripStart = moment(
-        `${entity.trip_update.trip.start_date} ${entity.trip_update.trip.start_time}`,
-        'YYYYMMDD HH:mm:ss',
-      );
-
-      // Get active services, and cache them
-      const tripStartDateString = entity.trip_update.trip.start_date;
-      if (!activeServicesMap.has(tripStartDateString)) {
-        const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
-        activeServicesMap.set(tripStartDateString, activeServices);
-      }
-
-      const activeServicesDay = activeServicesMap.get(tripStartDateString);
-      if (!activeServicesDay) {
-        continue;
-      }
-
-      const tripId = await getTripId(
-        regionName,
-        entity.trip_update.trip.route_id,
-        tripStart.toDate(),
-        entity.trip_update.trip.direction_id || 0,
-        activeServicesDay,
-      );
-
-      if (tripId) {
-        tripUpdate.trip_id = tripId;
-      } else {
-        // No trip id, skip this trip update
-        continue;
-      }
+    if (!tripId) {
+      // No trip id, skip this entity
+      continue;
     }
 
-    tripUpdates.push(tripUpdate);
+    const tripUpdate = createTripUpdate(entity, tripId, feedTimestampString);
 
     let stopIdMissing = false;
     let stopSequenceMissing = false;
@@ -188,10 +152,55 @@ export async function storeTripUpdateFeed(
         addMissingStoTimeUpdateInfos(tripUpdateStopTimeUpdates, tripAllStops, config);
       }
     }
+
+    tripUpdates.push(createTripUpdate(entity, tripId, feedTimestampString));
   }
 
   await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates, config.keepOldRecords);
   return tripUpdates.length;
+}
+
+async function getTripIdFromDb(
+  entity: FeedEntity,
+  regionName: string,
+  activeServicesMap: Map<string, string[]>,
+) {
+  if (
+    !entity.trip_update!.trip.start_date ||
+    !entity.trip_update!.trip.start_time ||
+    !entity.trip_update!.trip.route_id
+  ) {
+    // If we do not have enough information to get trip from db, just return null to skip this
+    return null;
+  }
+
+  const tripStart = moment(
+    `${entity.trip_update!.trip.start_date} ${entity.trip_update!.trip.start_time}`,
+    'YYYYMMDD HH:mm:ss',
+  );
+
+  // Get active services, and cache them
+  const tripStartDateString = entity.trip_update!.trip.start_date!;
+  if (!activeServicesMap.has(tripStartDateString)) {
+    const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
+    activeServicesMap.set(tripStartDateString, activeServices);
+  }
+
+  const activeServicesDay = activeServicesMap.get(tripStartDateString);
+  if (!activeServicesDay) {
+    // Unable to get active services
+    return null;
+  }
+
+  const tripId = await getTripId(
+    regionName,
+    entity.trip_update!.trip.route_id!,
+    tripStart.toDate(),
+    entity.trip_update!.trip.direction_id || 0,
+    activeServicesDay,
+  );
+
+  return tripId;
 }
 
 /**
@@ -234,10 +243,10 @@ function addMissingStoTimeUpdateInfos(
  * @param {*} entity
  * @param {*} recorded
  */
-function createTripUpdate(entity: FeedEntity, recorded: string): TripUpdateDB {
+function createTripUpdate(entity: FeedEntity, tripId: string, recorded: string): TripUpdateDB {
   const tripUpdate = entity.trip_update;
   return {
-    trip_id: tripUpdate!.trip.trip_id || 'a',
+    trip_id: tripId,
     route_id: tripUpdate!.trip.route_id,
     direction_id: tripUpdate!.trip.direction_id,
     trip_start_time: tripUpdate!.trip.start_time,
