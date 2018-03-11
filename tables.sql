@@ -21,7 +21,7 @@ CREATE TABLE <regionName>_trip_updates (
   vehicle_license_plate varchar(10) DEFAULT NULL,
   recorded datetime DEFAULT NULL,
   added timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 ALTER TABLE <regionName>_trip_updates
   ADD PRIMARY KEY trip_id (trip_id);
@@ -40,7 +40,7 @@ CREATE TABLE <regionName>_trip_update_stop_time_updates (
   departure_time int DEFAULT NULL,
   departure_uncertainty int DEFAULT NULL,
   schedule_relationship int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 ALTER TABLE <regionName>_trip_update_stop_time_updates
   ADD PRIMARY KEY (trip_id,stop_id),
