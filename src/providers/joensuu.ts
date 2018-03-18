@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class JoensuuProvider implements DataProvider {
   public name = 'joensuu';
 
-  public updateInterval = config.joensuu.updateInterval;
+  public updateInterval = parseInt(process.env.JOENSUU_UPDATE_INTERVAL!, 10);
 
   public async getTripUpdates() {
     const requestConfig: AxiosRequestConfig = {
       method: 'GET',
-      url: config.joensuu.feedUrl,
+      url: process.env.JOENSUU_UPDATES_URL,
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,

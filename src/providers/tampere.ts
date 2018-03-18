@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class TampereProvider implements DataProvider {
   public name = 'tampere';
 
-  public updateInterval = config.tampere.updateInterval;
+  public updateInterval = parseInt(process.env.TAMPERE_UPDATE_INTERVAL!, 10);
 
   public async getTripUpdates() {
     const requestConfig: AxiosRequestConfig = {
       method: 'GET',
-      url: config.tampere.feedUrl,
+      url: process.env.TAMPERE_UPDATES_URL,
       headers: {
         'User-Agent': config.serverUserAgent,
       },

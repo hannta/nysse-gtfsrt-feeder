@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class LappeenrantaProvider implements DataProvider {
   public name = 'lappeenranta';
 
-  public updateInterval = config.lappeenranta.updateInterval;
+  public updateInterval = parseInt(process.env.LAPPEENRANTA_UPDATE_INTERVAL!, 10);
 
   public async getTripUpdates() {
     const requestConfig: AxiosRequestConfig = {
       method: 'GET',
-      url: config.lappeenranta.feedUrl,
+      url: process.env.LAPPEENRANTA_UPDATES_URL,
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,

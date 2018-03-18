@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class HelsinkiProvider implements DataProvider {
   public name = 'helsinki';
 
-  public updateInterval = config.helsinki.updateInterval;
+  public updateInterval = parseInt(process.env.HELSINKI_UPDATE_INTERVAL!, 10);
 
   public async getTripUpdates() {
     const requestConfig: AxiosRequestConfig = {
       method: 'GET',
-      url: config.helsinki.feedUrl,
+      url: process.env.HELSINKI_UPDATES_URL,
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,

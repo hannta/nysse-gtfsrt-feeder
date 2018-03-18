@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class OuluProvider implements DataProvider {
   public name = 'oulu';
 
-  public updateInterval = config.oulu.updateInterval;
+  public updateInterval = parseInt(process.env.OULU_UPDATE_INTERVAL!, 10);
 
   public async getTripUpdates() {
     const requestConfig: AxiosRequestConfig = {
       method: 'GET',
-      url: config.oulu.feedUrl,
+      url: process.env.OULU_GTFSRT_TRIP_UPDATES_URL,
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,

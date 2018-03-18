@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class TurkuProvider implements DataProvider {
   public name = 'turku';
 
-  public updateInterval = config.turku.updateInterval;
+  public updateInterval = parseInt(process.env.TURKU_UPDATE_INTERVAL!, 10);
 
   public async getTripUpdates() {
     const requestConfig: AxiosRequestConfig = {
       method: 'GET',
-      url: config.turku.feedUrl,
+      url: process.env.TURKU_UPDATES_URL,
       headers: {
         'User-Agent': config.serverUserAgent,
       },

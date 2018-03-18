@@ -13,20 +13,6 @@ interface ConfigSettings {
     poolConnectionMax: number;
     debug: boolean;
   };
-  oulu: RegionConfig;
-  lahti: RegionConfig;
-  tampere: RegionConfig;
-  turku: RegionConfig;
-  helsinki: RegionConfig;
-  kuopio: RegionConfig;
-  joensuu: RegionConfig;
-  lappeenranta: RegionConfig;
-  jyvaskyla: RegionConfig;
-}
-
-interface RegionConfig {
-  feedUrl: string;
-  updateInterval: number;
 }
 
 const config: ConfigSettings = {
@@ -41,42 +27,6 @@ const config: ConfigSettings = {
     poolConnectionMin: parseInt(process.env.DATABASE_CONNECTION_POOL_MIN || '1', 10),
     poolConnectionMax: parseInt(process.env.DATABASE_CONNECTION_POOL_MAX || '1', 10),
     debug: false,
-  },
-  oulu: {
-    feedUrl: process.env.OULU_GTFSRT_TRIP_UPDATES_URL || '',
-    updateInterval: parseInt(process.env.OULU_UPDATE_INTERVAL || '15000', 10),
-  },
-  lahti: {
-    feedUrl: process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL || '',
-    updateInterval: parseInt(process.env.LAHTI_UPDATE_INTERVAL || '15000', 10),
-  },
-  tampere: {
-    feedUrl: process.env.TAMPERE_UPDATES_URL || '',
-    updateInterval: parseInt(process.env.TAMPERE_UPDATE_INTERVAL || '15000', 10),
-  },
-  turku: {
-    feedUrl: process.env.TURKU_UPDATES_URL || '',
-    updateInterval: parseInt(process.env.TURKU_UPDATE_INTERVAL || '15000', 10),
-  },
-  helsinki: {
-    feedUrl: process.env.HELSINKI_UPDATES_URL || '',
-    updateInterval: parseInt(process.env.HELSINKI_UPDATE_INTERVAL || '15000', 10),
-  },
-  kuopio: {
-    feedUrl: process.env.KUOPIO_UPDATES_URL || '',
-    updateInterval: parseInt(process.env.KUOPIO_UPDATE_INTERVAL || '15000', 10),
-  },
-  joensuu: {
-    feedUrl: process.env.JOENSUU_UPDATES_URL || '',
-    updateInterval: parseInt(process.env.JOENSUU_UPDATE_INTERVAL || '15000', 10),
-  },
-  lappeenranta: {
-    feedUrl: process.env.LAPPEENRANTA_UPDATES_URL || '',
-    updateInterval: parseInt(process.env.LAPPEENRANTA_UPDATE_INTERVAL || '15000', 10),
-  },
-  jyvaskyla: {
-    feedUrl: process.env.JYVASKYLA_UPDATES_URL || '',
-    updateInterval: parseInt(process.env.JYVASKYLA_UPDATE_INTERVAL || '15000', 10),
   },
 };
 

@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class LahtiProvider implements DataProvider {
   public name = 'lahti';
 
-  public updateInterval = config.lahti.updateInterval;
+  public updateInterval = parseInt(process.env.LAHTI_UPDATE_INTERVAL!, 10);
 
   public async getTripUpdates() {
     const requestConfig: AxiosRequestConfig = {
       method: 'GET',
-      url: config.lahti.feedUrl,
+      url: process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL,
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,

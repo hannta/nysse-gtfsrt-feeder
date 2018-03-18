@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class KuopioProvider implements DataProvider {
   public name = 'kuopio';
 
-  public updateInterval = config.kuopio.updateInterval;
+  public updateInterval = parseInt(process.env.KUOPIO_UPDATE_INTERVAL!, 10);
 
   public async getTripUpdates() {
     const requestConfig: AxiosRequestConfig = {
       method: 'GET',
-      url: config.kuopio.feedUrl,
+      url: process.env.KUOPIO_UPDATES_URL,
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,

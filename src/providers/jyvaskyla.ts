@@ -6,12 +6,12 @@ import { DataProvider } from '../providers';
 export class JyvaskylaProvider implements DataProvider {
   public name = 'jyvaskyla';
 
-  public updateInterval = config.jyvaskyla.updateInterval;
+  public updateInterval = parseInt(process.env.JYVASKYLA_UPDATE_INTERVAL!, 10);
 
   public async getTripUpdates() {
     const requestConfig: AxiosRequestConfig = {
       method: 'GET',
-      url: config.jyvaskyla.feedUrl,
+      url: process.env.JYVASKYLA_UPDATES_URL,
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,
