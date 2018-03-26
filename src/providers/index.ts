@@ -5,7 +5,7 @@ import { LahtiProvider } from '../providers/lahti';
 import { TampereProvider } from '../providers/tampere';
 import { TurkuProvider } from '../providers/turku';
 import { HelsinkiProvider } from '../providers/helsinki';
-// import { KuopioProvider } from '../providers/kuopio';
+import { KuopioProvider } from '../providers/kuopio';
 // import { JoensuuProvider } from '../providers/joensuu';
 // import { JyvaskylaProvider } from '../providers/jyvaskyla';
 // import { LappeenrantaProvider } from '../providers/lappeenranta';
@@ -27,7 +27,7 @@ const dataProviders: DataProvider[] = [
   new TampereProvider(),
   new TurkuProvider(),
   new HelsinkiProvider(),
-  // new KuopioProvider(),
+  new KuopioProvider(),
   // new JoensuuProvider(),
   // new JyvaskylaProvider(),
   // new LappeenrantaProvider(),
