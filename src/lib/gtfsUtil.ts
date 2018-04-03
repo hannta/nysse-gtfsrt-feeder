@@ -54,7 +54,7 @@ export async function getTripId(
       `${stopTimesTable}.departure_time`,
       'like',
       moment(originDeparture).format('HH:mm') + '%',
-    ) // Do not try to mach seconds, as vehicle api might returns only minutes
+    ) // Do not try to mach seconds, as vehicle api might returns only minutes (case Tampere)
     .andWhere(`${tripsTable}.direction_id`, direction)
     .orderBy(`${stopTimesTable}.stop_sequence`)
     .first();
