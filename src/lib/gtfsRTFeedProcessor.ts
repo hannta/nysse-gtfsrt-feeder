@@ -93,6 +93,7 @@ export async function storeTripUpdateFeed(
   const feedData: FeedMessage = GtfsRealtimeBindings.FeedMessage.decode(feedBinary);
 
   if (!feedData || !feedData.entity) {
+    // There should be at least empty entity(?)
     throw new Error('No feed data');
   }
 
@@ -165,7 +166,12 @@ async function getTripIdFromDb(
   regionName: string,
   activeServicesMap: Map<string, string[]>,
 ) {
-  if (!tripUpdate.trip.start_date || !tripUpdate.trip.start_time || !tripUpdate.trip.route_id) {
+  if (
+    !tripUpdate.trip.start_date ||
+    !tripUpdate.trip.start_time ||
+    !tripUpdate.trip.route_id ||
+    !tripUpdate.trip.direction_id
+  ) {
     // If we do not have enough information to get trip from db, just return null to skip this
     return null;
   }
@@ -176,7 +182,7 @@ async function getTripIdFromDb(
   );
 
   // Get active services, and cache them
-  const tripStartDateString = tripUpdate.trip.start_date!;
+  const tripStartDateString = tripUpdate.trip.start_date;
   if (!activeServicesMap.has(tripStartDateString)) {
     const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
     activeServicesMap.set(tripStartDateString, activeServices);
@@ -190,9 +196,9 @@ async function getTripIdFromDb(
 
   const tripId = await getTripId(
     regionName,
-    tripUpdate.trip.route_id!,
+    tripUpdate.trip.route_id,
     tripStart.toDate(),
-    tripUpdate.trip.direction_id || 0,
+    tripUpdate.trip.direction_id,
     activeServicesDay,
   );
 
