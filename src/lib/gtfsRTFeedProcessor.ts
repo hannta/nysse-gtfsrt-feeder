@@ -97,9 +97,7 @@ export async function storeTripUpdateFeed(
     throw new Error('No feed data');
   }
 
-  const feedTimestampString = moment
-    .unix(feedData.header.timestamp.low)
-    .format('YYYY-MM-DD HH:mm:ss');
+  const feedTimestamp = new Date(feedData.header.timestamp.low * 1000);
 
   const tripUpdates: TripUpdateDB[] = [];
   const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
@@ -122,7 +120,7 @@ export async function storeTripUpdateFeed(
       continue;
     }
 
-    const tripUpdate = createTripUpdate(entity, tripId, feedTimestampString);
+    const tripUpdate = createTripUpdate(entity, tripId, feedTimestamp);
 
     let stopIdMissing = false;
     let stopSequenceMissing = false;
@@ -154,7 +152,7 @@ export async function storeTripUpdateFeed(
       }
     }
 
-    tripUpdates.push(createTripUpdate(entity, tripId, feedTimestampString));
+    tripUpdates.push(createTripUpdate(entity, tripId, feedTimestamp));
   }
 
   await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates, settings.keepOldRecords);
@@ -251,7 +249,7 @@ function addMissingStoTimeUpdateInfos(
  * @param {*} entity
  * @param {*} recorded
  */
-function createTripUpdate(entity: FeedEntity, tripId: string, recorded: string): TripUpdateDB {
+function createTripUpdate(entity: FeedEntity, tripId: string, recorded: Date): TripUpdateDB {
   const tripUpdate = entity.trip_update;
   return {
     trip_id: tripId,
@@ -263,7 +261,7 @@ function createTripUpdate(entity: FeedEntity, tripId: string, recorded: string):
     vehicle_id: lodash.get(tripUpdate, 'vehicle.id', undefined),
     vehicle_label: lodash.get(tripUpdate, 'vehicle.label', undefined),
     vehicle_license_plate: lodash.get(tripUpdate, 'vehicle.license_plate', undefined),
-    recorded,
+    recorded: moment(recorded).format('YYYY-MM-DD HH:mm:ss'),
   };
 }
 
