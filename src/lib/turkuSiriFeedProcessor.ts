@@ -129,7 +129,12 @@ export async function storeTripUpdateFeed(
         continue;
       }
 
+      const tripUpdateId = `${tripId}-${tripStart.format('YYYYMMDD')}-${tripStart.format(
+        'YYYYMMDD',
+      )}`;
+
       tripUpdates.push({
+        id: tripUpdateId,
         trip_id: tripId,
         route_id: routeId,
         direction_id: direction,
@@ -144,7 +149,7 @@ export async function storeTripUpdateFeed(
 
       // Next stop estimations
       const nextStopTimeUpdate = {
-        trip_id: tripId,
+        trip_update_id: tripUpdateId,
         stop_id: vehicle.next_stoppointref,
         arrival_time: vehicle.next_expectedarrivaltime,
         departure_time: vehicle.next_expecteddeparturetime,
@@ -155,7 +160,7 @@ export async function storeTripUpdateFeed(
       if (vehicle.onwardcalls && vehicle.onwardcalls.length) {
         for (const call of vehicle.onwardcalls) {
           const stopTimeUpdate: StopTimeUpdateDB = {
-            trip_id: tripId,
+            trip_update_id: tripUpdateId,
             stop_sequence: call.visitnumber,
             stop_id: call.stoppointref,
             arrival_time: call.expectedarrivaltime,

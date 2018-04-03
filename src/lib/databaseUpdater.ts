@@ -6,6 +6,7 @@ const TRIP_UPDATE_STOP_TIME_UPDATES_TABLE = 'trip_update_stop_time_updates';
 const KEEP_OLD_RECORDS_DEFAULT = 1800; // Seconds (30 min)
 
 export interface TripUpdateDB {
+  id: string;
   trip_id: string;
   route_id?: string;
   direction_id?: number;
@@ -19,7 +20,7 @@ export interface TripUpdateDB {
 }
 
 export interface StopTimeUpdateDB {
-  trip_id: string;
+  trip_update_id: string;
   stop_sequence?: number;
   stop_id?: string;
   arrival_delay?: number;

@@ -121,14 +121,19 @@ export async function storeTripUpdateFeed(
       continue;
     }
 
+    const tripUpdateId = `${tripId}-${tripStart.format('YYYYMMDD')}-${tripStart.format(
+      'YYYYMMDD',
+    )}`;
+
     tripUpdates.push({
+      id: tripUpdateId,
       trip_id: tripId,
       route_id: routeId,
       direction_id: direction,
       trip_start_time: tripStart.format('HH:mm:ss'),
       trip_start_date: tripStart.format('YYYYMMDD'),
       schedule_relationship: undefined,
-      vehicle_id: lodash.get(serviceDelivery, 'monitoredVehicleJourney.vehicleRef', null),
+      vehicle_id: lodash.get(serviceDelivery, 'monitoredVehicleJourney.vehicleRef', undefined),
       vehicle_label: undefined,
       vehicle_license_plate: undefined,
       recorded: moment(serviceDelivery.recordedAtTime).format('YYYY-MM-DD HH:mm:ss'),
@@ -136,7 +141,7 @@ export async function storeTripUpdateFeed(
 
     // Process stop time updates
     for (const onwardCall of onwardCalls) {
-      tripUpdateStopTimeUpdates.push(createStopTimeUpdate(tripId, onwardCall));
+      tripUpdateStopTimeUpdates.push(createStopTimeUpdate(tripUpdateId, onwardCall));
     }
   }
 
@@ -149,13 +154,16 @@ export async function storeTripUpdateFeed(
  * @param {*} call
  * @param {*} tripUpdateId
  */
-function createStopTimeUpdate(tripId: string, onwardCall: TampereOnwardCall): StopTimeUpdateDB {
+function createStopTimeUpdate(
+  tripUpdateId: string,
+  onwardCall: TampereOnwardCall,
+): StopTimeUpdateDB {
   const stopRefUrl = lodash.get(onwardCall, 'stopPointRef', null); // Kind of hack to parse stop id form url
   const expectedArrival = lodash.get(onwardCall, 'expectedArrivalTime', null);
   const expectedDeparture = lodash.get(onwardCall, 'expectedDepartureTime', null);
   const stopSequence = lodash.get(onwardCall, 'order', null);
   return {
-    trip_id: tripId,
+    trip_update_id: tripUpdateId,
     stop_sequence: stopSequence ? parseInt(stopSequence, 10) : undefined,
     stop_id: stopRefUrl ? stopRefUrl.substr(stopRefUrl.lastIndexOf('/') + 1) : undefined,
     arrival_time: expectedArrival ? moment(expectedArrival).unix() : undefined,

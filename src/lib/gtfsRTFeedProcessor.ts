@@ -120,6 +120,10 @@ export async function storeTripUpdateFeed(
       continue;
     }
 
+    const tripUpdateId = `${tripId}-${entity.trip_update.trip.start_date}-${
+      entity.trip_update.trip.start_time
+    }`;
+
     let stopIdMissing = false;
     let stopSequenceMissing = false;
 
@@ -127,8 +131,9 @@ export async function storeTripUpdateFeed(
     if (entity.trip_update.stop_time_update) {
       tripUpdateStopTimeUpdates.push(
         ...entity.trip_update.stop_time_update.map(stopTimeUpdate => {
-          const tripUpdateStopTimeUpdate = createStopTimeUpdate(tripId, stopTimeUpdate);
+          const tripUpdateStopTimeUpdate = createStopTimeUpdate(tripUpdateId, stopTimeUpdate);
 
+          // Check if any stop_id or stop_sequence is missing from this trip update stop time updates
           stopIdMissing = !tripUpdateStopTimeUpdate.stop_id ? true : stopIdMissing;
           stopSequenceMissing = !tripUpdateStopTimeUpdate.stop_sequence
             ? true
@@ -150,7 +155,7 @@ export async function storeTripUpdateFeed(
       }
     }
 
-    tripUpdates.push(createTripUpdate(entity, tripId, feedTimestamp));
+    tripUpdates.push(createTripUpdate(tripUpdateId, tripId, entity, feedTimestamp));
   }
 
   await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates, settings.keepOldRecords);
@@ -243,13 +248,21 @@ function addMissingStoTimeUpdateInfos(
 }
 
 /**
- * Create trip update object
- * @param {*} entity
- * @param {*} recorded
+ * Create trip update object for db
+ * @param tripUpdateId
+ * @param entity
+ * @param tripId
+ * @param recorded
  */
-function createTripUpdate(entity: FeedEntity, tripId: string, recorded: Date): TripUpdateDB {
+function createTripUpdate(
+  tripUpdateId: string,
+  tripId: string,
+  entity: FeedEntity,
+  recorded: Date,
+): TripUpdateDB {
   const tripUpdate = entity.trip_update;
   return {
+    id: tripUpdateId,
     trip_id: tripId,
     route_id: tripUpdate!.trip.route_id,
     direction_id: tripUpdate!.trip.direction_id,
@@ -264,16 +277,16 @@ function createTripUpdate(entity: FeedEntity, tripId: string, recorded: Date): T
 }
 
 /**
- * Create trip update stop time update object
- * @param {*} stopTimeUpdate
- * @param {*} tripUpdateId
+ * Create trip update stop time update object for db
+ * @param tripUpdateId
+ * @param stopTimeUpdateData
  */
 function createStopTimeUpdate(
-  tripId: string,
+  tripUpdateId: string,
   stopTimeUpdateData: StopTimeUpdate,
 ): StopTimeUpdateDB {
   return {
-    trip_id: tripId,
+    trip_update_id: tripUpdateId,
     stop_sequence: stopTimeUpdateData.stop_sequence,
     stop_id: stopTimeUpdateData.stop_id,
     arrival_delay: lodash.get(stopTimeUpdateData, 'arrival.delay', null),
