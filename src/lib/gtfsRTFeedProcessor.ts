@@ -120,8 +120,6 @@ export async function storeTripUpdateFeed(
       continue;
     }
 
-    const tripUpdate = createTripUpdate(entity, tripId, feedTimestamp);
-
     let stopIdMissing = false;
     let stopSequenceMissing = false;
 
@@ -129,7 +127,7 @@ export async function storeTripUpdateFeed(
     if (entity.trip_update.stop_time_update) {
       tripUpdateStopTimeUpdates.push(
         ...entity.trip_update.stop_time_update.map(stopTimeUpdate => {
-          const tripUpdateStopTimeUpdate = createStopTimeUpdate(tripUpdate.trip_id, stopTimeUpdate);
+          const tripUpdateStopTimeUpdate = createStopTimeUpdate(tripId, stopTimeUpdate);
 
           stopIdMissing = !tripUpdateStopTimeUpdate.stop_id ? true : stopIdMissing;
           stopSequenceMissing = !tripUpdateStopTimeUpdate.stop_sequence
@@ -146,7 +144,7 @@ export async function storeTripUpdateFeed(
       (stopIdMissing && settings.tryToFixMissingStopId) ||
       (stopSequenceMissing && settings.tryToFixMissingStopSequence)
     ) {
-      const tripAllStops = await getTripStops(regionName, tripUpdate.trip_id);
+      const tripAllStops = await getTripStops(regionName, tripId);
       if (tripAllStops && tripAllStops.length > 0) {
         addMissingStoTimeUpdateInfos(tripUpdateStopTimeUpdates, tripAllStops, settings);
       }
