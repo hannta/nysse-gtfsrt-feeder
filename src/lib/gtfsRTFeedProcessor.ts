@@ -113,7 +113,7 @@ export async function storeTripUpdateFeed(
     const tripId =
       config.getTripAlwaysFromDB ||
       (!entity.trip_update.trip.trip_id && config.getMissingTripFromDB)
-        ? await getTripIdFromDb(entity, regionName, activeServicesMap)
+        ? await getTripIdFromDb(entity.trip_update, regionName, activeServicesMap)
         : entity.trip_update.trip.trip_id;
 
     if (!tripId) {
@@ -161,26 +161,22 @@ export async function storeTripUpdateFeed(
 }
 
 async function getTripIdFromDb(
-  entity: FeedEntity,
+  tripUpdate: TripUpdate,
   regionName: string,
   activeServicesMap: Map<string, string[]>,
 ) {
-  if (
-    !entity.trip_update!.trip.start_date ||
-    !entity.trip_update!.trip.start_time ||
-    !entity.trip_update!.trip.route_id
-  ) {
+  if (!tripUpdate.trip.start_date || !tripUpdate.trip.start_time || !tripUpdate.trip.route_id) {
     // If we do not have enough information to get trip from db, just return null to skip this
     return null;
   }
 
   const tripStart = moment(
-    `${entity.trip_update!.trip.start_date} ${entity.trip_update!.trip.start_time}`,
+    `${tripUpdate.trip.start_date} ${tripUpdate.trip.start_time}`,
     'YYYYMMDD HH:mm:ss',
   );
 
   // Get active services, and cache them
-  const tripStartDateString = entity.trip_update!.trip.start_date!;
+  const tripStartDateString = tripUpdate.trip.start_date!;
   if (!activeServicesMap.has(tripStartDateString)) {
     const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
     activeServicesMap.set(tripStartDateString, activeServices);
@@ -194,9 +190,9 @@ async function getTripIdFromDb(
 
   const tripId = await getTripId(
     regionName,
-    entity.trip_update!.trip.route_id!,
+    tripUpdate.trip.route_id!,
     tripStart.toDate(),
-    entity.trip_update!.trip.direction_id || 0,
+    tripUpdate.trip.direction_id || 0,
     activeServicesDay,
   );
 
