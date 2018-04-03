@@ -161,6 +161,12 @@ export async function storeTripUpdateFeed(
   return tripUpdates.length;
 }
 
+/**
+ * Try to get trip id from DB
+ * @param tripUpdate
+ * @param regionName
+ * @param activeServicesMap
+ */
 async function getTripIdFromDb(
   tripUpdate: TripUpdate,
   regionName: string,
