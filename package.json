@@ -33,6 +33,6 @@
     "@types/winston": "^2.3.8",
     "tslint": "^5.9.1",
     "tslint-config-prettier": "^1.10.0",
-    "typescript": "^2.7.2"
+    "typescript": "^2.8.1"
   }
 }
