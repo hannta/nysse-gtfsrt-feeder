@@ -17,9 +17,9 @@
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/@types/boom/-/boom-7.2.0.tgz#19c36cbb5811a7493f0f2e37f31d42b28df1abc1"
 
-"@types/dotenv@^4.0.2":
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/@types/dotenv/-/dotenv-4.0.2.tgz#f2983f0afe9fd7f6eb8aef515a4d77f4cbaa0597"
+"@types/dotenv@^4.0.3":
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/@types/dotenv/-/dotenv-4.0.3.tgz#ebcfc40da7bc0728b705945b7db48485ec5b4b67"
   dependencies:
     "@types/node" "*"
 
@@ -42,9 +42,9 @@
     "@types/express-serve-static-core" "*"
     "@types/serve-static" "*"
 
-"@types/knex@^0.14.8":
-  version "0.14.8"
-  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.14.8.tgz#cb8eaf769c2494f9e95bf4de268b8cf2f2d52a93"
+"@types/knex@^0.14.9":
+  version "0.14.9"
+  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.14.9.tgz#1715673b873fccbebceadc6332379b67528af970"
   dependencies:
     "@types/bluebird" "*"
     "@types/events" "*"
@@ -73,9 +73,9 @@
     "@types/express-serve-static-core" "*"
     "@types/mime" "*"
 
-"@types/winston@^2.3.8":
-  version "2.3.8"
-  resolved "https://registry.yarnpkg.com/@types/winston/-/winston-2.3.8.tgz#88964f45ecb5ed1feb4bfb38a24316bee8bf8768"
+"@types/winston@^2.3.9":
+  version "2.3.9"
+  resolved "https://registry.yarnpkg.com/@types/winston/-/winston-2.3.9.tgz#1ff9f1bb57952fe3d88c1b21c4899ede316a35bc"
   dependencies:
     "@types/node" "*"
 
