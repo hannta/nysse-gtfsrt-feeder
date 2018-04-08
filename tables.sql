@@ -1,6 +1,6 @@
 --
 -- NOTE!
--- Replace <regionName> with actual region name / data provider region name
+-- Replace <regionName> with actual region name / data provider name
 --
 
 DROP TABLE IF EXISTS <regionName>_trip_update_stop_time_updates;
