@@ -97,6 +97,10 @@ export async function storeTripUpdateFeed(
     if (vehicles.hasOwnProperty(vehicleProp)) {
       const vehicle: TurkuMonitoredVehicle = vehicles[vehicleProp];
 
+      if (!vehicle.monitored || !vehicle.originaimeddeparturetime) {
+        continue;
+      }
+
       const tripStart = moment.unix(vehicle.originaimeddeparturetime);
       const direction = parseInt(vehicle.directionref, 10) === 2 ? 0 : 1; // Turku uses the opposite logic from HSL or Tampere: 2 is GTFS 0 and 1 is GTFS 1,
 
