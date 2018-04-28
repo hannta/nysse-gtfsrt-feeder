@@ -18,21 +18,21 @@
     "express": "^4.16.3",
     "gtfs-realtime-bindings": "^0.0.4",
     "knex": "^0.14.6",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.10",
     "mariasql": "^0.2.6",
     "moment": "^2.22.1",
-    "winston": "^2.4.1"
+    "winston": "^2.4.2"
   },
   "devDependencies": {
     "@types/boom": "^7.2.0",
     "@types/dotenv": "^4.0.3",
     "@types/express": "^4.11.1",
-    "@types/lodash": "^4.14.107",
-    "@types/knex": "^0.14.10",
+    "@types/lodash": "^4.14.108",
+    "@types/knex": "^0.14.12",
     "@types/node": "^8.5.8",
     "@types/winston": "^2.3.9",
     "tslint": "^5.9.1",
-    "tslint-config-prettier": "^1.10.0",
-    "typescript": "^2.8.1"
+    "tslint-config-prettier": "^1.12.0",
+    "typescript": "^2.8.3"
   }
 }
