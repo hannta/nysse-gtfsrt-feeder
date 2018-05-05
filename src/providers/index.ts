@@ -1,11 +1,9 @@
 import * as moment from 'moment';
 import winstonInstance from '../config/winston';
-import { OuluProvider } from '../providers/oulu';
-import { LahtiProvider } from '../providers/lahti';
 import { TampereProvider } from '../providers/tampere';
 import { TurkuProvider } from '../providers/turku';
 import { HelsinkiProvider } from '../providers/helsinki';
-import { KuopioProvider } from '../providers/kuopio';
+import { GtfsRtProvider } from './GtfsRtProvider';
 // import { JoensuuProvider } from '../providers/joensuu';
 // import { JyvaskylaProvider } from '../providers/jyvaskyla';
 // import { LappeenrantaProvider } from '../providers/lappeenranta';
@@ -22,12 +20,24 @@ export interface DataProviderStatus {
 }
 
 const dataProviders: DataProvider[] = [
-  new OuluProvider(),
-  new LahtiProvider(),
+  new GtfsRtProvider(
+    'oulu',
+    process.env.OULU_GTFSRT_TRIP_UPDATES_URL!,
+    parseInt(process.env.OULU_UPDATE_INTERVAL!, 10),
+  ),
+  new GtfsRtProvider(
+    'lahti',
+    process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL!,
+    parseInt(process.env.LAHTI_UPDATE_INTERVAL!, 10),
+  ),
+  new GtfsRtProvider(
+    'kuopio',
+    process.env.KUOPIO_UPDATES_URL!,
+    parseInt(process.env.KUOPIO_UPDATE_INTERVAL!, 10),
+  ),
   new TampereProvider(),
   new TurkuProvider(),
   new HelsinkiProvider(),
-  new KuopioProvider(),
   // new JoensuuProvider(),
   // new JyvaskylaProvider(),
   // new LappeenrantaProvider(),
