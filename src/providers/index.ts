@@ -4,9 +4,6 @@ import { TampereProvider } from '../providers/tampere';
 import { TurkuProvider } from '../providers/turku';
 import { HelsinkiProvider } from '../providers/helsinki';
 import { GtfsRtProvider } from './GtfsRtProvider';
-// import { JoensuuProvider } from '../providers/joensuu';
-// import { JyvaskylaProvider } from '../providers/jyvaskyla';
-// import { LappeenrantaProvider } from '../providers/lappeenranta';
 
 export interface DataProvider {
   name: string;
@@ -20,6 +17,9 @@ export interface DataProviderStatus {
 }
 
 const dataProviders: DataProvider[] = [
+  new TampereProvider(),
+  new TurkuProvider(),
+  new HelsinkiProvider(),
   new GtfsRtProvider(
     'oulu',
     process.env.OULU_GTFSRT_TRIP_UPDATES_URL!,
@@ -35,12 +35,25 @@ const dataProviders: DataProvider[] = [
     process.env.KUOPIO_UPDATES_URL!,
     parseInt(process.env.KUOPIO_UPDATE_INTERVAL!, 10),
   ),
-  new TampereProvider(),
-  new TurkuProvider(),
-  new HelsinkiProvider(),
-  // new JoensuuProvider(),
-  // new JyvaskylaProvider(),
-  // new LappeenrantaProvider(),
+  /*
+  new GtfsRtProvider(
+    'joensuu',
+    process.env.JOENSUU_UPDATES_URL!,
+    parseInt(process.env.JOENSUU_UPDATE_INTERVAL!, 10),
+  ),
+
+  new GtfsRtProvider(
+    'joensuu',
+    process.env.JYVASKYLA_UPDATES_URL!,
+    parseInt(process.env.JYVASKYLA_UPDATE_INTERVAL!, 10),
+  ),
+
+  new GtfsRtProvider(
+    'lappeenranta',
+    process.env.LAPPEENRANTA_UPDATES_URL!,
+    parseInt(process.env.LAPPEENRANTA_UPDATE_INTERVAL!, 10),
+  ),
+  */
 ];
 
 export const statusDataMap = new Map<string, DataProviderStatus>();
