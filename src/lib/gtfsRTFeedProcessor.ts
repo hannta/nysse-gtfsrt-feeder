@@ -186,12 +186,12 @@ async function getTripIdFromDb(
   const tripStart = moment(
     `${tripUpdate.trip.start_date} ${tripUpdate.trip.start_time}`,
     'YYYYMMDD HH:mm:ss',
-  );
+  ).toDate();
 
   // Get active services, and cache them
   const tripStartDateString = tripUpdate.trip.start_date;
   if (!activeServicesMap.has(tripStartDateString)) {
-    const activeServices = await getActiveServiceIds(regionName, moment(tripStart).toDate());
+    const activeServices = await getActiveServiceIds(regionName, tripStart);
     activeServicesMap.set(tripStartDateString, activeServices);
   }
 
@@ -204,7 +204,7 @@ async function getTripIdFromDb(
   const tripId = await getTripId(
     regionName,
     tripUpdate.trip.route_id,
-    tripStart.toDate(),
+    tripStart,
     tripUpdate.trip.direction_id,
     activeServicesDay,
   );

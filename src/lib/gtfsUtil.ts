@@ -98,7 +98,7 @@ export async function getActiveServiceIds(regionName: string, date: Date): Promi
 }
 
 /**
- * Get gtfs structure day name (table column name) for day
+ * Get Gtfs structure day name (table column name) for day
  * @param {Date} date - Date
  */
 export function getGtfsCalendarDayColumnName(date: Date): string {
