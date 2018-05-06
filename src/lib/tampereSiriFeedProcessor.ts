@@ -158,7 +158,7 @@ function createStopTimeUpdate(
   tripUpdateId: string,
   onwardCall: TampereOnwardCall,
 ): StopTimeUpdateDB {
-  const stopRefUrl = lodash.get(onwardCall, 'stopPointRef', null); // Kind of hack to parse stop id form url
+  const stopRefUrl = lodash.get(onwardCall, 'stopPointRef', null); // TODO! kind of hack to parse stop id form url
   const expectedArrival = lodash.get(onwardCall, 'expectedArrivalTime', null);
   const expectedDeparture = lodash.get(onwardCall, 'expectedDepartureTime', null);
   const stopSequence = lodash.get(onwardCall, 'order', null);
