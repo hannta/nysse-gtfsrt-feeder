@@ -42,9 +42,9 @@
     "@types/express-serve-static-core" "*"
     "@types/serve-static" "*"
 
-"@types/knex@^0.14.12":
-  version "0.14.12"
-  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.14.12.tgz#e86a275c5cabd645a16ebe59fab9c63c2d5fd714"
+"@types/knex@^0.14.14":
+  version "0.14.14"
+  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.14.14.tgz#0fb45549e7cc8ea8400e42a9a61fa650cefe512f"
   dependencies:
     "@types/bluebird" "*"
     "@types/events" "*"
