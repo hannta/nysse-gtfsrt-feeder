@@ -120,9 +120,8 @@ export async function storeTripUpdateFeed(
       continue;
     }
 
-    const tripUpdateId = `${tripId}-${entity.trip_update.trip.start_date}-${
-      entity.trip_update.trip.start_time
-    }`;
+    const tripUpdateId = `${tripId}-${entity.trip_update.trip.start_date || ''}-${entity.trip_update
+      .trip.start_time || ''}`;
 
     let stopIdMissing = false;
     let stopSequenceMissing = false;
@@ -267,7 +266,7 @@ function createTripUpdate(
     route_id: tripUpdate!.trip.route_id,
     direction_id: tripUpdate!.trip.direction_id,
     trip_start_time: tripUpdate!.trip.start_time,
-    trip_start_date: tripUpdate!.trip.start_date,
+    trip_start_date: tripUpdate!.trip.start_date || moment().format('YYYYMMDD'), // TODO try to figure out better default
     schedule_relationship: tripUpdate!.trip.schedule_relationship,
     vehicle_id: lodash.get(tripUpdate, 'vehicle.id', undefined),
     vehicle_label: lodash.get(tripUpdate, 'vehicle.label', undefined),
