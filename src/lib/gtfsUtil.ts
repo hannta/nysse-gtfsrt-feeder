@@ -54,7 +54,7 @@ export async function getTripId(
       `${stopTimesTable}.departure_time`,
       'like',
       moment(originDeparture).format('HH:mm') + '%',
-    ) // Do not try to mach seconds, as vehicle api might returns only minutes (case Tampere)
+    ) // Do not try to mach seconds, as vehicle api might returns only minutes (case Tampere siri api)
     .andWhere(`${tripsTable}.direction_id`, direction)
     .orderBy(`${stopTimesTable}.stop_sequence`)
     .first();
@@ -79,15 +79,13 @@ export async function getActiveServiceIds(regionName: string, date: Date): Promi
     .andWhere('end_date', '>=', formattedDate)
     .andWhere(calendarDatesColumn, 1)
     .whereNotIn('service_id', (qb: QueryBuilder) => {
-      qb
-        .select('service_id')
+      qb.select('service_id')
         .from(calendarDatesTable)
         .where('date', formattedDate)
         .andWhere('exception_type', '2');
     })
     .union((qb: QueryBuilder) => {
-      qb
-        .select('service_id')
+      qb.select('service_id')
         .from(calendarDatesTable)
         .where('date', formattedDate)
         .andWhere('exception_type', 1);
