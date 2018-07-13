@@ -3,6 +3,7 @@ import config from '../config/config';
 import { storeTripUpdateFeed, GtfsRTFeedProcessorSettings } from '../lib/gtfsRTFeedProcessor';
 import { DataProvider } from '../providers';
 
+// TODO can be replaced with common GtfsRtProvider?
 export class HelsinkiProvider implements DataProvider {
   public name = 'helsinki';
 

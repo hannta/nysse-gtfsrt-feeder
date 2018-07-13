@@ -3,6 +3,10 @@ import config from '../config/config';
 import { storeTripUpdateFeed, GtfsRTFeedProcessorSettings } from '../lib/gtfsRTFeedProcessor';
 import { DataProvider } from '../providers';
 
+/**
+ * GTFS-RT data provider
+ * Fetches data from GTFS-RT data source and stores it to database
+ */
 export class GtfsRtProvider implements DataProvider {
   public name: string;
 

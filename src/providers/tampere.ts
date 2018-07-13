@@ -3,6 +3,10 @@ import config from '../config/config';
 import { storeTripUpdateFeed } from '../lib/tampereSiriFeedProcessor';
 import { DataProvider } from '../providers';
 
+/**
+ * Tampere SIRI provider
+ * Fetches data from Tampere SIRI api and stores it to database
+ */
 export class TampereProvider implements DataProvider {
   public name = 'tampere';
 

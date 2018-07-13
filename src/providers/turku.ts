@@ -3,6 +3,10 @@ import config from '../config/config';
 import { storeTripUpdateFeed } from '../lib/turkuSiriFeedProcessor';
 import { DataProvider } from '../providers';
 
+/**
+ * Turku SIRI provider
+ * Fetches data from Turku SIRI api and stores it to database
+ */
 export class TurkuProvider implements DataProvider {
   public name = 'turku';
 

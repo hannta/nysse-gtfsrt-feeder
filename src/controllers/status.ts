@@ -2,7 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { statusDataMap } from '../providers';
 
 /**
- * Simple status controller
+ * Simple status controller for checking the data provider last status
  */
 export class StatusController {
   public router: Router;
