@@ -16,6 +16,7 @@ export interface DataProviderStatus {
   lastTripUpdateCount: number;
 }
 
+// Active data providers
 const dataProviders: DataProvider[] = [
   new TampereProvider(),
   new TurkuProvider(),
