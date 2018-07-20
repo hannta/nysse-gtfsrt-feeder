@@ -17,7 +17,7 @@
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "gtfs-realtime-bindings": "^0.0.4",
-    "knex": "^0.15.1",
+    "knex": "^0.15.2",
     "lodash": "^4.17.10",
     "moment": "^2.22.2",
     "mysql2": "^1.5.3",
@@ -32,7 +32,7 @@
     "@types/node": "^8.5.8",
     "@types/winston": "^2.3.9",
     "tslint": "^5.11.0",
-    "tslint-config-prettier": "^1.13.0",
+    "tslint-config-prettier": "^1.14.0",
     "typescript": "^2.9.2"
   }
 }
