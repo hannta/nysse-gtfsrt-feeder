@@ -50,17 +50,17 @@
     "@types/express-serve-static-core" "*"
     "@types/serve-static" "*"
 
-"@types/knex@^0.14.17":
-  version "0.14.17"
-  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.14.17.tgz#970a6f7ff51115797590b2ca0d67bdd8deb9e056"
+"@types/knex@^0.14.18":
+  version "0.14.18"
+  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.14.18.tgz#bca62bb0f5e3aef9bcec105607b2e9c10bed5307"
   dependencies:
     "@types/bluebird" "*"
     "@types/events" "*"
     "@types/node" "*"
 
-"@types/lodash@^4.14.113":
-  version "4.14.113"
-  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.113.tgz#1d1cb063f17fec4cc46f1a90d978ebf441113061"
+"@types/lodash@^4.14.115":
+  version "4.14.115"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.115.tgz#54d171b2ce12c058742443b5f6754760f701b8f9"
 
 "@types/mime@*":
   version "2.0.0"
