@@ -2,7 +2,6 @@ import * as moment from 'moment';
 import winstonInstance from '../config/winston';
 import { TampereProvider } from '../providers/tampere';
 import { TurkuProvider } from '../providers/turku';
-import { HelsinkiProvider } from '../providers/helsinki';
 import { GtfsRtProvider } from './GtfsRtProvider';
 
 export interface DataProvider {
