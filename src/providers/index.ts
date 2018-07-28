@@ -19,7 +19,11 @@ export interface DataProviderStatus {
 const dataProviders: DataProvider[] = [
   new TampereProvider(),
   new TurkuProvider(),
-  new HelsinkiProvider(),
+  new GtfsRtProvider(
+    'helsinki',
+    process.env.HELSINKI_UPDATES_URL!,
+    parseInt(process.env.HELSINKI_UPDATE_INTERVAL!, 10),
+  ),
   new GtfsRtProvider(
     'oulu',
     process.env.OULU_GTFSRT_TRIP_UPDATES_URL!,
