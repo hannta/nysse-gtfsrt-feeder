@@ -73,7 +73,7 @@ export async function startDataProviders() {
           lastTripUpdateCount: tripUpdateCount,
         });
       } catch (error) {
-        winstonInstance.error(`Data provider ${dataProvider.name} error`, error.message);
+        winstonInstance.error(`Data provider ${dataProvider.name} error`, { error });
       } finally {
         setTimeout(getData, dataProvider.updateInterval);
       }
