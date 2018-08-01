@@ -1,4 +1,4 @@
-import { createLogger, format, transports } from 'winston';
+import { createLogger, transports } from 'winston';
 import config from './config';
 
 export default createLogger({
