@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 import { knex } from '../config/database';
 
 const TRIP_UPDATES_TABLE = 'trip_updates';

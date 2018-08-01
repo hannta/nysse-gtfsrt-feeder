@@ -1,12 +1,10 @@
-import * as winston from 'winston';
+import { createLogger, format, transports } from 'winston';
 import config from './config';
 
-export default new winston.Logger({
+export default createLogger({
   transports: [
-    new winston.transports.Console({
+    new transports.Console({
       level: config.env === 'development' ? 'debug' : 'warn',
-      json: false,
-      colorize: false,
     }),
   ],
 });
