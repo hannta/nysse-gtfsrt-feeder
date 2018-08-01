@@ -1,4 +1,4 @@
-import * as Knex from 'knex';
+import Knex from 'knex';
 import config from '../config/config';
 
 const knexConfig: Knex.Config = {

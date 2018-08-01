@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import moment from 'moment';
 import winstonInstance from '../config/winston';
 import { TampereProvider } from '../providers/tampere';
 import { TurkuProvider } from '../providers/turku';

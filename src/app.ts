@@ -1,6 +1,6 @@
-import * as express from 'express';
-import * as bodyParser from 'body-parser';
-import * as Boom from 'boom';
+import express from 'express';
+import bodyParser from 'body-parser';
+import Boom from 'boom';
 import winstonInstance from './config/winston';
 import config from './config/config';
 import { StatusController } from './controllers/status';

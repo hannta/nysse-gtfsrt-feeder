@@ -1,5 +1,5 @@
-import * as moment from 'moment';
-import * as lodash from 'lodash';
+import moment from 'moment';
+import lodash from 'lodash';
 import { updateDatabase, TripUpdateDB, StopTimeUpdateDB } from './databaseUpdater';
 import { getActiveServiceIds, getTripId } from './gtfsUtil';
 
