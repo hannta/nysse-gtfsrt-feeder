@@ -2,7 +2,13 @@ import moment from 'moment';
 import lodash from 'lodash';
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from '../lib/databaseUpdater';
-import { getTripStops, TripStop, getActiveServiceIds, getTripId } from '../lib/gtfsUtil';
+import {
+  getTripStops,
+  TripStop,
+  getActiveServiceIds,
+  getTripId,
+  getTripStopTimes,
+} from '../lib/gtfsUtil';
 
 /**
  * GTFS-RT feed processor config options
@@ -120,38 +126,74 @@ export async function storeTripUpdateFeed(
       continue;
     }
 
+    const stopTimeUpdates = entity.trip_update.stop_time_update;
+    if (!stopTimeUpdates || stopTimeUpdates.length < 1) {
+      // Empty stop time update, skip this
+      continue;
+    }
+
+    const tripStopTimes = await getTripStopTimes(regionName, tripId);
+
     const tripUpdateId = `${tripId}-${entity.trip_update.trip.start_date || ''}-${entity.trip_update
       .trip.start_time || ''}`;
 
-    let stopIdMissing = false;
-    let stopSequenceMissing = false;
+    let delay;
 
-    // Create stop time updates, if exists
-    if (entity.trip_update.stop_time_update) {
-      tripUpdateStopTimeUpdates.push(
-        ...entity.trip_update.stop_time_update.map(stopTimeUpdate => {
-          const tripUpdateStopTimeUpdate = createStopTimeUpdate(tripUpdateId, stopTimeUpdate);
+    for (const stopTime of tripStopTimes) {
+      const newStopTimeUpdate: StopTimeUpdateDB = { trip_update_id: tripUpdateId };
+      const matchedStopTimeUpdate = stopTimeUpdates.find(stopTimeUpdate => {
+        return (stopTimeUpdate.stop_id && stopTimeUpdate.stop_id === stopTime.stop_id) ||
+          (stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_sequence === stopTime.stop_sequence)
+          ? true
+          : false;
+      });
 
-          // Check if any stop_id or stop_sequence is missing from this trip update stop time updates
-          stopIdMissing = !tripUpdateStopTimeUpdate.stop_id ? true : stopIdMissing;
-          stopSequenceMissing = !tripUpdateStopTimeUpdate.stop_sequence
-            ? true
-            : stopSequenceMissing;
+      if (matchedStopTimeUpdate) {
+        if (matchedStopTimeUpdate.arrival) {
+          if (matchedStopTimeUpdate.arrival.delay) {
+            delay = matchedStopTimeUpdate.arrival.delay;
+            if (matchedStopTimeUpdate.arrival.time) {
+              newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
+            } else {
+              newStopTimeUpdate.arrival_delay = matchedStopTimeUpdate.arrival.delay;
+            }
+          } else if (matchedStopTimeUpdate.arrival.time) {
+            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
+            // delay = calculate delay
+          } else {
+            // Incorrect arrival
+          }
+        } else {
+          // No arrival, use previous delay if available
+          newStopTimeUpdate.arrival_delay = delay || undefined;
+        }
 
-          return tripUpdateStopTimeUpdate;
-        }),
-      );
-    }
-
-    // Add missing stop_id and stop_sequence values for stop time updates
-    if (
-      (stopIdMissing && settings.tryToFixMissingStopId) ||
-      (stopSequenceMissing && settings.tryToFixMissingStopSequence)
-    ) {
-      const tripAllStops = await getTripStops(regionName, tripId);
-      if (tripAllStops && tripAllStops.length > 0) {
-        addMissingStoTimeUpdateInfos(tripUpdateStopTimeUpdates, tripAllStops, settings);
+        if (matchedStopTimeUpdate.departure) {
+          if (matchedStopTimeUpdate.departure.delay) {
+            delay = matchedStopTimeUpdate.departure.delay;
+            if (matchedStopTimeUpdate.departure.time) {
+              newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
+            } else {
+              newStopTimeUpdate.arrival_delay = matchedStopTimeUpdate.departure.delay;
+            }
+          } else if (matchedStopTimeUpdate.departure.time) {
+            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
+            // delay = calculate delay
+          } else {
+            // Incorrect departure
+          }
+        } else {
+          // No arrival, use previous delay if available
+          newStopTimeUpdate.departure_delay = delay || undefined;
+        }
+      } else {
+        if (delay) {
+          newStopTimeUpdate.arrival_delay = delay;
+          newStopTimeUpdate.departure_delay = delay;
+        }
       }
+
+      tripUpdateStopTimeUpdates.push(newStopTimeUpdate);
     }
 
     tripUpdates.push(createTripUpdate(tripUpdateId, tripId, entity, feedTimestamp));
