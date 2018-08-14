@@ -7,6 +7,13 @@ export interface TripStop {
   stop_sequence: number;
 }
 
+export interface StopTime {
+  arrival_time: string;
+  departure_time: string;
+  stop_id: string;
+  stop_sequence: number;
+}
+
 interface Route {
   route_short_name: string;
   route_id: string;
@@ -128,4 +135,16 @@ export async function getRouteIdMappings(regionName: string) {
       return [route.route_short_name, route.route_id];
     }),
   );
+}
+
+/**
+ * Get trip stop times
+ * @param regionName
+ * @param tripId
+ */
+export async function getTripStopTimes(regionName: string, tripId: string): Promise<StopTime[]> {
+  const stopTimesTable = `${regionName}_stop_times`;
+  return knex(stopTimesTable)
+    .select('arrival_time', 'departure_time', 'stop_id', 'stop_sequence')
+    .where('trip_id', tripId);
 }
