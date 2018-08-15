@@ -146,5 +146,6 @@ export async function getTripStopTimes(regionName: string, tripId: string): Prom
   const stopTimesTable = `${regionName}_stop_times`;
   return knex(stopTimesTable)
     .select('arrival_time', 'departure_time', 'stop_id', 'stop_sequence')
-    .where('trip_id', tripId);
+    .where('trip_id', tripId)
+    .orderBy('stop_sequence');
 }
