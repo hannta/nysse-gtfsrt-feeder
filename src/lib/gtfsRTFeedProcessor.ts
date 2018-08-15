@@ -2,13 +2,7 @@ import moment from 'moment';
 import lodash from 'lodash';
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from '../lib/databaseUpdater';
-import {
-  getTripStops,
-  TripStop,
-  getActiveServiceIds,
-  getTripId,
-  getTripStopTimes,
-} from '../lib/gtfsUtil';
+import { getActiveServiceIds, getTripId, getTripStopTimes } from '../lib/gtfsUtil';
 
 /**
  * GTFS-RT feed processor config options
@@ -140,7 +134,11 @@ export async function storeTripUpdateFeed(
     let delay;
 
     for (const stopTime of tripStopTimes) {
-      const newStopTimeUpdate: StopTimeUpdateDB = { trip_update_id: tripUpdateId };
+      const newStopTimeUpdate: StopTimeUpdateDB = {
+        trip_update_id: tripUpdateId,
+        stop_id: stopTime.stop_id,
+        stop_sequence: stopTime.stop_sequence,
+      };
       const matchedStopTimeUpdate = stopTimeUpdates.find(stopTimeUpdate => {
         return (stopTimeUpdate.stop_id && stopTimeUpdate.stop_id === stopTime.stop_id) ||
           (stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_sequence === stopTime.stop_sequence)
@@ -149,7 +147,10 @@ export async function storeTripUpdateFeed(
       });
 
       if (matchedStopTimeUpdate) {
+        newStopTimeUpdate.schedule_relationship = matchedStopTimeUpdate.schedule_relationship;
+
         if (matchedStopTimeUpdate.arrival) {
+          newStopTimeUpdate.arrival_uncertainty = matchedStopTimeUpdate.arrival.uncertainty;
           if (matchedStopTimeUpdate.arrival.delay) {
             delay = matchedStopTimeUpdate.arrival.delay;
             if (matchedStopTimeUpdate.arrival.time) {
@@ -169,12 +170,13 @@ export async function storeTripUpdateFeed(
         }
 
         if (matchedStopTimeUpdate.departure) {
+          newStopTimeUpdate.departure_uncertainty = matchedStopTimeUpdate.departure.uncertainty;
           if (matchedStopTimeUpdate.departure.delay) {
             delay = matchedStopTimeUpdate.departure.delay;
             if (matchedStopTimeUpdate.departure.time) {
-              newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
+              newStopTimeUpdate.departure_time = matchedStopTimeUpdate.departure.time.low;
             } else {
-              newStopTimeUpdate.arrival_delay = matchedStopTimeUpdate.departure.delay;
+              newStopTimeUpdate.departure_delay = matchedStopTimeUpdate.departure.delay;
             }
           } else if (matchedStopTimeUpdate.departure.time) {
             newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
@@ -183,7 +185,7 @@ export async function storeTripUpdateFeed(
             // Incorrect departure
           }
         } else {
-          // No arrival, use previous delay if available
+          // No departure, use previous delay if available
           newStopTimeUpdate.departure_delay = delay || undefined;
         }
       } else {
@@ -258,6 +260,7 @@ async function getTripIdFromDb(
  * @param tripUpdateStopTimeUpdates
  * @param tripAllStops
  */
+/*
 function addMissingStoTimeUpdateInfos(
   tripUpdateStopTimeUpdates: StopTimeUpdateDB[],
   tripAllStops: TripStop[],
@@ -287,6 +290,7 @@ function addMissingStoTimeUpdateInfos(
     }
   }
 }
+*/
 
 /**
  * Create trip update object for db
@@ -322,6 +326,7 @@ function createTripUpdate(
  * @param tripUpdateId
  * @param stopTimeUpdateData
  */
+/*
 function createStopTimeUpdate(
   tripUpdateId: string,
   stopTimeUpdateData: StopTimeUpdate,
@@ -339,3 +344,4 @@ function createStopTimeUpdate(
     schedule_relationship: stopTimeUpdateData.schedule_relationship,
   };
 }
+*/
