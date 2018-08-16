@@ -2,7 +2,7 @@ import moment from 'moment';
 import lodash from 'lodash';
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from '../lib/databaseUpdater';
-import { getActiveServiceIds, getTripId, getTripStopTimes } from '../lib/gtfsUtil';
+import { getActiveServiceIds, getTripId, getTripStopTimes, StopTime } from '../lib/gtfsUtil';
 
 /**
  * GTFS-RT feed processor config options
@@ -127,82 +127,106 @@ export async function storeTripUpdateFeed(
     }
 
     const tripStopTimes = await getTripStopTimes(regionName, tripId);
+    if (!tripStopTimes || tripStopTimes.length < 1) {
+      // Incorrect trip, no trip stop times
+      continue;
+    }
 
     const tripUpdateId = `${tripId}-${entity.trip_update.trip.start_date || ''}-${entity.trip_update
       .trip.start_time || ''}`;
 
-    let delay;
-
-    for (const stopTime of tripStopTimes) {
-      const newStopTimeUpdate: StopTimeUpdateDB = {
-        trip_update_id: tripUpdateId,
-        stop_id: stopTime.stop_id,
-        stop_sequence: stopTime.stop_sequence,
-      };
-      const matchedStopTimeUpdate = stopTimeUpdates.find(stopTimeUpdate => {
-        return (stopTimeUpdate.stop_id && stopTimeUpdate.stop_id === stopTime.stop_id) ||
-          (stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_sequence === stopTime.stop_sequence)
-          ? true
-          : false;
-      });
-
-      if (matchedStopTimeUpdate) {
-        newStopTimeUpdate.schedule_relationship = matchedStopTimeUpdate.schedule_relationship;
-
-        if (matchedStopTimeUpdate.arrival) {
-          newStopTimeUpdate.arrival_uncertainty = matchedStopTimeUpdate.arrival.uncertainty;
-          if (matchedStopTimeUpdate.arrival.delay) {
-            delay = matchedStopTimeUpdate.arrival.delay;
-            if (matchedStopTimeUpdate.arrival.time) {
-              newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
-            } else {
-              newStopTimeUpdate.arrival_delay = matchedStopTimeUpdate.arrival.delay;
-            }
-          } else if (matchedStopTimeUpdate.arrival.time) {
-            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
-            // delay = calculate delay
-          } else {
-            // Incorrect arrival
-          }
-        } else {
-          // No arrival, use previous delay if available
-          newStopTimeUpdate.arrival_delay = delay || undefined;
-        }
-
-        if (matchedStopTimeUpdate.departure) {
-          newStopTimeUpdate.departure_uncertainty = matchedStopTimeUpdate.departure.uncertainty;
-          if (matchedStopTimeUpdate.departure.delay) {
-            delay = matchedStopTimeUpdate.departure.delay;
-            if (matchedStopTimeUpdate.departure.time) {
-              newStopTimeUpdate.departure_time = matchedStopTimeUpdate.departure.time.low;
-            } else {
-              newStopTimeUpdate.departure_delay = matchedStopTimeUpdate.departure.delay;
-            }
-          } else if (matchedStopTimeUpdate.departure.time) {
-            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
-            // delay = calculate delay
-          } else {
-            // Incorrect departure
-          }
-        } else {
-          // No departure, use previous delay if available
-          newStopTimeUpdate.departure_delay = delay || undefined;
-        }
-      } else {
-        if (delay) {
-          newStopTimeUpdate.arrival_delay = delay;
-          newStopTimeUpdate.departure_delay = delay;
-        }
-      }
-
-      tripUpdateStopTimeUpdates.push(newStopTimeUpdate);
-    }
+    tripUpdateStopTimeUpdates.push(
+      ...createStopTimeUpdates(tripUpdateId, tripStopTimes, stopTimeUpdates),
+    );
 
     tripUpdates.push(createTripUpdate(tripUpdateId, tripId, entity, feedTimestamp));
   }
 
   await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates, settings.keepOldRecords);
   return tripUpdates.length;
+}
+
+/**
+ * Create stop time updates matching stop timetable times and gtfs-rt stop time updates
+ *
+ * @param tripUpdateId
+ * @param tripStopTimes
+ * @param stopTimeUpdates
+ */
+function createStopTimeUpdates(
+  tripUpdateId: string,
+  tripStopTimes: StopTime[],
+  stopTimeUpdates: StopTimeUpdate[],
+): StopTimeUpdateDB[] {
+  const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
+  let delay;
+
+  for (const stopTime of tripStopTimes) {
+    const newStopTimeUpdate: StopTimeUpdateDB = {
+      trip_update_id: tripUpdateId,
+      stop_id: stopTime.stop_id,
+      stop_sequence: stopTime.stop_sequence,
+    };
+    const matchedStopTimeUpdate = stopTimeUpdates.find(stopTimeUpdate => {
+      return (stopTimeUpdate.stop_id && stopTimeUpdate.stop_id === stopTime.stop_id) ||
+        (stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_sequence === stopTime.stop_sequence)
+        ? true
+        : false;
+    });
+
+    if (matchedStopTimeUpdate) {
+      newStopTimeUpdate.schedule_relationship = matchedStopTimeUpdate.schedule_relationship;
+
+      if (matchedStopTimeUpdate.arrival) {
+        newStopTimeUpdate.arrival_uncertainty = matchedStopTimeUpdate.arrival.uncertainty;
+        if (matchedStopTimeUpdate.arrival.delay) {
+          delay = matchedStopTimeUpdate.arrival.delay;
+          if (matchedStopTimeUpdate.arrival.time) {
+            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
+          } else {
+            newStopTimeUpdate.arrival_delay = matchedStopTimeUpdate.arrival.delay;
+          }
+        } else if (matchedStopTimeUpdate.arrival.time) {
+          newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
+          // delay = calculate delay
+        } else {
+          // Incorrect arrival
+        }
+      } else {
+        // No arrival, use previous delay if available
+        newStopTimeUpdate.arrival_delay = delay || undefined;
+      }
+
+      if (matchedStopTimeUpdate.departure) {
+        newStopTimeUpdate.departure_uncertainty = matchedStopTimeUpdate.departure.uncertainty;
+        if (matchedStopTimeUpdate.departure.delay) {
+          delay = matchedStopTimeUpdate.departure.delay;
+          if (matchedStopTimeUpdate.departure.time) {
+            newStopTimeUpdate.departure_time = matchedStopTimeUpdate.departure.time.low;
+          } else {
+            newStopTimeUpdate.departure_delay = matchedStopTimeUpdate.departure.delay;
+          }
+        } else if (matchedStopTimeUpdate.departure.time) {
+          newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
+          // delay = calculate delay
+        } else {
+          // Incorrect departure
+        }
+      } else {
+        // No departure, use previous delay if available
+        newStopTimeUpdate.departure_delay = delay || undefined;
+      }
+    } else {
+      if (delay) {
+        newStopTimeUpdate.arrival_delay = delay;
+        newStopTimeUpdate.departure_delay = delay;
+      }
+    }
+
+    tripUpdateStopTimeUpdates.push(newStopTimeUpdate);
+  }
+
+  return tripUpdateStopTimeUpdates;
 }
 
 /**
