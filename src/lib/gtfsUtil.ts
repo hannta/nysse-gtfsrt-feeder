@@ -2,6 +2,12 @@ import moment from 'moment';
 import { QueryBuilder } from 'knex';
 import { knex } from '../config/database';
 
+export interface Trip {
+  trip_id: string;
+  route_id: string;
+  direction_id: number;
+}
+
 export interface TripStop {
   stop_id: string;
   stop_sequence: number;
@@ -30,6 +36,18 @@ export async function getTripStops(regionName: string, tripId: string): Promise<
   return knex(stopTimesTable)
     .select(`${stopTimesTable}.stop_id`, `${stopTimesTable}.stop_sequence`)
     .where(`${stopTimesTable}.trip_id`, tripId);
+}
+
+/**
+ * Get trip by trip id
+ * @param regionName
+ * @param tripId
+ */
+export async function getTripById(regionName: string, tripId: string): Promise<Trip> {
+  const tripsTable = `${regionName}_trips`;
+  return knex(tripsTable)
+    .select('route_id', 'trip_id', 'direction_id')
+    .where('trip_id', tripId);
 }
 
 /**
