@@ -47,7 +47,8 @@ export async function getTripById(regionName: string, tripId: string): Promise<T
   const tripsTable = `${regionName}_trips`;
   return knex(tripsTable)
     .select('route_id', 'trip_id', 'direction_id')
-    .where('trip_id', tripId);
+    .where('trip_id', tripId)
+    .first();
 }
 
 /**
