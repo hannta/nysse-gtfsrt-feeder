@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from '../config/config';
-import { storeTripUpdateFeed, GtfsRTFeedProcessorSettings } from '../lib/gtfsRTFeedProcessor';
+import { GtfsRTFeedProcessorSettings, GtfsRTFeedProcessor } from '../lib/gtfsRTFeedProcessor';
 import { DataProvider } from '../providers';
 
 /**
@@ -14,8 +14,7 @@ export class GtfsRtProvider implements DataProvider {
 
   private gtfsRTFeedUrl: string;
 
-  private gtfsRTFeedProcessorSettings: GtfsRTFeedProcessorSettings;
-
+  private readonly gtfsRTFeedProcessor: GtfsRTFeedProcessor;
   constructor(
     name: string,
     gtfsRTFeedUrl: string,
@@ -28,7 +27,7 @@ export class GtfsRtProvider implements DataProvider {
     this.name = name;
     this.gtfsRTFeedUrl = gtfsRTFeedUrl;
     this.updateInterval = updateInterval;
-    this.gtfsRTFeedProcessorSettings = gtfsRTFeedProcessorSettings;
+    this.gtfsRTFeedProcessor = new GtfsRTFeedProcessor(name, gtfsRTFeedProcessorSettings);
   }
 
   public async getTripUpdates() {
@@ -43,7 +42,6 @@ export class GtfsRtProvider implements DataProvider {
     };
 
     const resp = await axios.request(requestConfig);
-
-    return storeTripUpdateFeed(this.name, resp.data, this.gtfsRTFeedProcessorSettings);
+    return this.gtfsRTFeedProcessor.storeTripUpdateFeed(resp.data);
   }
 }

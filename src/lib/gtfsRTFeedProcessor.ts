@@ -1,8 +1,13 @@
 import moment from 'moment';
-import lodash from 'lodash';
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from '../lib/databaseUpdater';
-import { getActiveServiceIds, getTripId, getTripStopTimes, StopTime } from '../lib/gtfsUtil';
+import {
+  getActiveServiceIds,
+  getTripId,
+  getTripStopTimes,
+  StopTime,
+  getTripById,
+} from '../lib/gtfsUtil';
 
 /**
  * GTFS-RT feed processor config options
@@ -81,291 +86,308 @@ interface StopTimeEvent {
 }
 
 /**
- * Store trip update feed to database
- * @param region
- * @param feedBinary
+ * GTFS-RT feed processor
+ *
+ * Parses GTFS-RT trip update feed and stores data to database
  */
-export async function storeTripUpdateFeed(
-  regionName: string,
-  feedBinary: any,
-  settings: GtfsRTFeedProcessorSettings,
-) {
-  const feedData: FeedMessage = GtfsRealtimeBindings.FeedMessage.decode(feedBinary);
+export class GtfsRTFeedProcessor {
+  private readonly regionName: string;
+  private readonly options: GtfsRTFeedProcessorSettings;
+  private activeServicesMap: Map<string, string[]>;
 
-  if (!feedData || !feedData.entity) {
-    // There should be at least empty entity(?)
-    throw new Error('No feed data');
+  constructor(regionName: string, options: GtfsRTFeedProcessorSettings) {
+    this.regionName = regionName;
+    this.options = options;
+    this.activeServicesMap = new Map<string, string[]>();
   }
 
-  const feedTimestamp = new Date(feedData.header.timestamp.low * 1000);
+  /**
+   * Store trip update feed to database
+   *
+   * @param feedBinary
+   */
+  public async storeTripUpdateFeed(feedBinary: any) {
+    const feedData: FeedMessage = GtfsRealtimeBindings.FeedMessage.decode(feedBinary);
 
-  const tripUpdates: TripUpdateDB[] = [];
-  const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
-  const activeServicesMap = new Map<string, string[]>();
-
-  // Process feed entities, create trip updates
-  for (const entity of feedData.entity) {
-    if (!entity || !entity.trip_update || !entity.trip_update.trip) {
-      // No data, skip
-      continue;
-    }
-    const tripId =
-      settings.getTripAlwaysFromDB ||
-      (!entity.trip_update.trip.trip_id && settings.getMissingTripFromDB)
-        ? await getTripIdFromDb(entity.trip_update, regionName, activeServicesMap)
-        : entity.trip_update.trip.trip_id;
-
-    if (!tripId) {
-      // No trip id, skip this entity
-      continue;
+    if (!feedData || !feedData.entity) {
+      // There should be at least empty entity(?)
+      throw new Error('No feed data');
     }
 
-    const stopTimeUpdates = entity.trip_update.stop_time_update;
-    if (!stopTimeUpdates || stopTimeUpdates.length < 1) {
-      // Empty stop time update, skip this
-      continue;
+    const dbTripUpdates: TripUpdateDB[] = [];
+    const dbTripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
+
+    for (const entity of feedData.entity) {
+      if (
+        !entity ||
+        !entity.trip_update ||
+        !entity.trip_update.trip ||
+        !entity.trip_update.stop_time_update
+      ) {
+        // No data, skip
+        continue;
+      }
+
+      const recorded = entity.trip_update.timestamp
+        ? new Date(entity.trip_update.timestamp.low * 1000)
+        : new Date(feedData.header.timestamp.low * 1000);
+      const tripDescriptor = entity.trip_update.trip;
+
+      if (tripDescriptor.trip_id) {
+        const tripStopTimes = await getTripStopTimes(this.regionName, tripDescriptor.trip_id);
+        if (!tripStopTimes || tripStopTimes.length < 1) {
+          // Incorrect trip / no trip stop times
+          continue;
+        }
+
+        const tripStartDate = tripDescriptor.start_date
+          ? tripDescriptor.start_date
+          : this.findTripStartDate(tripDescriptor.trip_id, tripStopTimes);
+        const tripStartTime = tripDescriptor.start_time
+          ? tripDescriptor.start_time
+          : tripStopTimes[0].departure_time;
+        const routeId = tripDescriptor.route_id
+          ? tripDescriptor.route_id
+          : (await getTripById(this.regionName, tripDescriptor.trip_id)).route_id;
+        const directionId = tripDescriptor.direction_id
+          ? tripDescriptor.direction_id
+          : (await getTripById(this.regionName, tripDescriptor.trip_id)).direction_id;
+
+        const data = this.processTripUpdate({
+          tripId: tripDescriptor.trip_id,
+          tripStartDate,
+          tripStartTime,
+          tripStopTimeUpdates: entity.trip_update.stop_time_update,
+          tripStopTimes,
+          routeId,
+          directionId,
+          scheduleRelationship: tripDescriptor.schedule_relationship || 1,
+          recorded,
+          vehicle: entity.trip_update.vehicle,
+        });
+
+        dbTripUpdates.push(data.tripUpdate);
+        dbTripUpdateStopTimeUpdates.push(...data.stopTimeUpdates);
+      } else if (
+        !tripDescriptor.trip_id &&
+        tripDescriptor.route_id &&
+        tripDescriptor.direction_id &&
+        tripDescriptor.start_date &&
+        tripDescriptor.start_time
+      ) {
+        // No trip id, try to get from database
+        const tripId = await this.getTripIdFromDb(
+          tripDescriptor.route_id,
+          tripDescriptor.direction_id,
+          tripDescriptor.start_date,
+          tripDescriptor.start_time,
+        );
+
+        if (!tripId) {
+          // Failed to get trip id, skip this entity
+          continue;
+        }
+
+        const tripStopTimes = await getTripStopTimes(this.regionName, tripId);
+        if (!tripStopTimes || tripStopTimes.length < 1) {
+          // Incorrect trip / no trip stop times
+          continue;
+        }
+
+        const data = this.processTripUpdate({
+          tripId,
+          tripStartDate: tripDescriptor.start_date,
+          tripStartTime: tripDescriptor.start_time,
+          tripStopTimeUpdates: entity.trip_update.stop_time_update,
+          tripStopTimes,
+          routeId: tripDescriptor.route_id,
+          directionId: tripDescriptor.direction_id,
+          scheduleRelationship: tripDescriptor.schedule_relationship || 1,
+          recorded,
+          vehicle: entity.trip_update.vehicle,
+        });
+        dbTripUpdates.push(data.tripUpdate);
+        dbTripUpdateStopTimeUpdates.push(...data.stopTimeUpdates);
+      } else {
+        // Not enough info to process this trip update
+        continue;
+      }
     }
 
-    const tripStopTimes = await getTripStopTimes(regionName, tripId);
-    if (!tripStopTimes || tripStopTimes.length < 1) {
-      // Incorrect trip, no trip stop times
-      continue;
-    }
+    await updateDatabase(
+      this.regionName,
+      dbTripUpdates,
+      dbTripUpdateStopTimeUpdates,
+      this.options.keepOldRecords,
+    );
+    return dbTripUpdates.length;
+  }
 
-    const tripUpdateId = `${tripId}-${entity.trip_update.trip.start_date || ''}-${entity.trip_update
-      .trip.start_time || ''}`;
+  private findTripStartDate(tripId: string, tripStopTimes: StopTime[]) {
+    // TODO!
+    return moment().format('YYYYMMDD');
+  }
 
-    tripUpdateStopTimeUpdates.push(
-      ...createStopTimeUpdates(tripUpdateId, tripStopTimes, stopTimeUpdates),
+  private processTripUpdate({
+    tripId,
+    tripStartDate,
+    tripStartTime,
+    tripStopTimeUpdates,
+    tripStopTimes,
+    routeId,
+    directionId,
+    scheduleRelationship,
+    recorded,
+    vehicle,
+  }: {
+    tripId: string;
+    tripStartDate: string;
+    tripStartTime: string;
+    tripStopTimeUpdates: StopTimeUpdate[];
+    tripStopTimes: StopTime[];
+    routeId: string;
+    directionId: number;
+    scheduleRelationship: number;
+    recorded: Date;
+    vehicle?: VehicleDescriptor;
+  }) {
+    const tripUpdateId = `${tripId}-${tripStartDate}-${tripStartTime}`;
+    const stopTimeUpdateDBs = this.createStopTimeUpdates(
+      tripUpdateId,
+      tripStopTimes,
+      tripStopTimeUpdates,
     );
 
-    tripUpdates.push(createTripUpdate(tripUpdateId, tripId, entity, feedTimestamp));
-  }
-
-  await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates, settings.keepOldRecords);
-  return tripUpdates.length;
-}
-
-/**
- * Create stop time updates matching stop timetable times and gtfs-rt stop time updates
- *
- * @param tripUpdateId
- * @param tripStopTimes
- * @param stopTimeUpdates
- */
-function createStopTimeUpdates(
-  tripUpdateId: string,
-  tripStopTimes: StopTime[],
-  stopTimeUpdates: StopTimeUpdate[],
-): StopTimeUpdateDB[] {
-  const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
-  let delay;
-
-  for (const stopTime of tripStopTimes) {
-    const newStopTimeUpdate: StopTimeUpdateDB = {
-      trip_update_id: tripUpdateId,
-      stop_id: stopTime.stop_id,
-      stop_sequence: stopTime.stop_sequence,
+    const tripUpdateDb = {
+      id: tripUpdateId,
+      trip_id: tripId,
+      route_id: routeId,
+      direction_id: directionId,
+      trip_start_time: tripStartTime,
+      trip_start_date: tripStartDate,
+      schedule_relationship: scheduleRelationship,
+      vehicle_id: vehicle ? vehicle.id : undefined,
+      vehicle_label: vehicle ? vehicle.label : undefined,
+      vehicle_license_plate: vehicle ? vehicle.license_plate : undefined,
+      recorded: moment(recorded).format('YYYY-MM-DD HH:mm:ss'),
     };
-    const matchedStopTimeUpdate = stopTimeUpdates.find(stopTimeUpdate => {
-      return (stopTimeUpdate.stop_id && stopTimeUpdate.stop_id === stopTime.stop_id) ||
-        (stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_sequence === stopTime.stop_sequence)
-        ? true
-        : false;
-    });
 
-    if (matchedStopTimeUpdate) {
-      newStopTimeUpdate.schedule_relationship = matchedStopTimeUpdate.schedule_relationship;
+    return {
+      tripUpdate: tripUpdateDb,
+      stopTimeUpdates: stopTimeUpdateDBs,
+    };
+  }
 
-      if (matchedStopTimeUpdate.arrival) {
-        newStopTimeUpdate.arrival_uncertainty = matchedStopTimeUpdate.arrival.uncertainty;
-        if (matchedStopTimeUpdate.arrival.delay) {
-          delay = matchedStopTimeUpdate.arrival.delay;
-          if (matchedStopTimeUpdate.arrival.time) {
+  /**
+   * Create stop time updates matching stop timetable times and gtfs-rt stop time updates
+   *
+   * @param tripUpdateId
+   * @param tripStopTimes
+   * @param stopTimeUpdates
+   */
+  private createStopTimeUpdates(
+    tripUpdateId: string,
+    tripStopTimes: StopTime[],
+    stopTimeUpdates: StopTimeUpdate[],
+  ): StopTimeUpdateDB[] {
+    const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
+    let delay;
+
+    for (const stopTime of tripStopTimes) {
+      const newStopTimeUpdate: StopTimeUpdateDB = {
+        trip_update_id: tripUpdateId,
+        stop_id: stopTime.stop_id,
+        stop_sequence: stopTime.stop_sequence,
+      };
+      const matchedStopTimeUpdate = stopTimeUpdates.find(stopTimeUpdate => {
+        return (stopTimeUpdate.stop_id && stopTimeUpdate.stop_id === stopTime.stop_id) ||
+          (stopTimeUpdate.stop_sequence && stopTimeUpdate.stop_sequence === stopTime.stop_sequence)
+          ? true
+          : false;
+      });
+
+      if (matchedStopTimeUpdate) {
+        newStopTimeUpdate.schedule_relationship = matchedStopTimeUpdate.schedule_relationship;
+
+        if (matchedStopTimeUpdate.arrival) {
+          newStopTimeUpdate.arrival_uncertainty = matchedStopTimeUpdate.arrival.uncertainty;
+          if (matchedStopTimeUpdate.arrival.delay) {
+            delay = matchedStopTimeUpdate.arrival.delay;
+            if (matchedStopTimeUpdate.arrival.time) {
+              newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
+            } else {
+              newStopTimeUpdate.arrival_delay = matchedStopTimeUpdate.arrival.delay;
+            }
+          } else if (matchedStopTimeUpdate.arrival.time) {
             newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
+            // delay = calculate delay
           } else {
-            newStopTimeUpdate.arrival_delay = matchedStopTimeUpdate.arrival.delay;
+            // Incorrect arrival
           }
-        } else if (matchedStopTimeUpdate.arrival.time) {
-          newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
-          // delay = calculate delay
         } else {
-          // Incorrect arrival
+          // No arrival, use previous delay if available
+          newStopTimeUpdate.arrival_delay = delay || undefined;
+        }
+
+        if (matchedStopTimeUpdate.departure) {
+          newStopTimeUpdate.departure_uncertainty = matchedStopTimeUpdate.departure.uncertainty;
+          if (matchedStopTimeUpdate.departure.delay) {
+            delay = matchedStopTimeUpdate.departure.delay;
+            if (matchedStopTimeUpdate.departure.time) {
+              newStopTimeUpdate.departure_time = matchedStopTimeUpdate.departure.time.low;
+            } else {
+              newStopTimeUpdate.departure_delay = matchedStopTimeUpdate.departure.delay;
+            }
+          } else if (matchedStopTimeUpdate.departure.time) {
+            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
+            // delay = calculate delay
+          } else {
+            // Incorrect departure
+          }
+        } else {
+          // No departure, use previous delay if available
+          newStopTimeUpdate.departure_delay = delay || undefined;
         }
       } else {
-        // No arrival, use previous delay if available
-        newStopTimeUpdate.arrival_delay = delay || undefined;
+        if (delay) {
+          newStopTimeUpdate.arrival_delay = delay;
+          newStopTimeUpdate.departure_delay = delay;
+        }
       }
 
-      if (matchedStopTimeUpdate.departure) {
-        newStopTimeUpdate.departure_uncertainty = matchedStopTimeUpdate.departure.uncertainty;
-        if (matchedStopTimeUpdate.departure.delay) {
-          delay = matchedStopTimeUpdate.departure.delay;
-          if (matchedStopTimeUpdate.departure.time) {
-            newStopTimeUpdate.departure_time = matchedStopTimeUpdate.departure.time.low;
-          } else {
-            newStopTimeUpdate.departure_delay = matchedStopTimeUpdate.departure.delay;
-          }
-        } else if (matchedStopTimeUpdate.departure.time) {
-          newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
-          // delay = calculate delay
-        } else {
-          // Incorrect departure
-        }
-      } else {
-        // No departure, use previous delay if available
-        newStopTimeUpdate.departure_delay = delay || undefined;
-      }
-    } else {
-      if (delay) {
-        newStopTimeUpdate.arrival_delay = delay;
-        newStopTimeUpdate.departure_delay = delay;
-      }
+      tripUpdateStopTimeUpdates.push(newStopTimeUpdate);
     }
 
-    tripUpdateStopTimeUpdates.push(newStopTimeUpdate);
+    return tripUpdateStopTimeUpdates;
   }
 
-  return tripUpdateStopTimeUpdates;
-}
-
-/**
- * Try to get trip id from DB
- * @param tripUpdate
- * @param regionName
- * @param activeServicesMap
- */
-async function getTripIdFromDb(
-  tripUpdate: TripUpdate,
-  regionName: string,
-  activeServicesMap: Map<string, string[]>,
-) {
-  if (
-    !tripUpdate.trip.start_date ||
-    !tripUpdate.trip.start_time ||
-    !tripUpdate.trip.route_id ||
-    !tripUpdate.trip.direction_id
+  /**
+   * Try to get trip id from DB
+   * @param routeId
+   * @param directionId
+   * @param startDate
+   * @param startTime
+   */
+  private async getTripIdFromDb(
+    routeId: string,
+    directionId: number,
+    startDate: string,
+    startTime: string,
   ) {
-    // If we do not have enough information to get trip from db, just return null to skip this
-    return null;
-  }
+    const tripStart = moment(`${startDate} ${startTime}`, 'YYYYMMDD HH:mm:ss').toDate();
 
-  const tripStart = moment(
-    `${tripUpdate.trip.start_date} ${tripUpdate.trip.start_time}`,
-    'YYYYMMDD HH:mm:ss',
-  ).toDate();
-
-  // Get active services, and cache them
-  const tripStartDateString = tripUpdate.trip.start_date;
-  if (!activeServicesMap.has(tripStartDateString)) {
-    const activeServices = await getActiveServiceIds(regionName, tripStart);
-    activeServicesMap.set(tripStartDateString, activeServices);
-  }
-
-  const activeServicesDay = activeServicesMap.get(tripStartDateString);
-  if (!activeServicesDay) {
-    // Unable to get active services
-    return null;
-  }
-
-  const tripId = await getTripId(
-    regionName,
-    tripUpdate.trip.route_id,
-    tripStart,
-    tripUpdate.trip.direction_id,
-    activeServicesDay,
-  );
-
-  return tripId;
-}
-
-/**
- * Add missing stop_id's to stop time updates
- * @param tripUpdateStopTimeUpdates
- * @param tripAllStops
- */
-/*
-function addMissingStoTimeUpdateInfos(
-  tripUpdateStopTimeUpdates: StopTimeUpdateDB[],
-  tripAllStops: TripStop[],
-  settings: GtfsRTFeedProcessorSettings,
-) {
-  for (const stopTimeUpdate of tripUpdateStopTimeUpdates) {
-    if (settings.tryToFixMissingStopId && !stopTimeUpdate.stop_id && stopTimeUpdate.stop_sequence) {
-      // Add stop_id if missing
-      const stop = tripAllStops.find((tripStop: TripStop) => {
-        return tripStop.stop_sequence === stopTimeUpdate.stop_sequence;
-      });
-      if (stop) {
-        stopTimeUpdate.stop_id = stop.stop_id;
-      }
-    } else if (
-      settings.tryToFixMissingStopSequence &&
-      !stopTimeUpdate.stop_sequence &&
-      stopTimeUpdate.stop_id
-    ) {
-      // Add stop_sequence if missing
-      const stop = tripAllStops.find((tripStop: TripStop) => {
-        return tripStop.stop_id === stopTimeUpdate.stop_id;
-      });
-      if (stop) {
-        stopTimeUpdate.stop_sequence = stop.stop_sequence;
-      }
+    // Get active services, and cache them
+    if (!this.activeServicesMap.has(startDate)) {
+      const activeServices = await getActiveServiceIds(this.regionName, tripStart);
+      this.activeServicesMap.set(startDate, activeServices);
     }
+
+    const activeServicesDay = this.activeServicesMap.get(startDate);
+    if (!activeServicesDay || activeServicesDay.length < 1) {
+      // Unable to get active services
+      return null;
+    }
+
+    return getTripId(this.regionName, routeId, tripStart, directionId, activeServicesDay);
   }
 }
-*/
-
-/**
- * Create trip update object for db
- * @param tripUpdateId
- * @param entity
- * @param tripId
- * @param recorded
- */
-function createTripUpdate(
-  tripUpdateId: string,
-  tripId: string,
-  entity: FeedEntity,
-  recorded: Date,
-): TripUpdateDB {
-  const tripUpdate = entity.trip_update;
-  return {
-    id: tripUpdateId,
-    trip_id: tripId,
-    route_id: tripUpdate!.trip.route_id,
-    direction_id: tripUpdate!.trip.direction_id,
-    trip_start_time: tripUpdate!.trip.start_time,
-    trip_start_date: tripUpdate!.trip.start_date || moment().format('YYYYMMDD'), // TODO try to figure out better default than now
-    schedule_relationship: tripUpdate!.trip.schedule_relationship,
-    vehicle_id: lodash.get(tripUpdate, 'vehicle.id', undefined),
-    vehicle_label: lodash.get(tripUpdate, 'vehicle.label', undefined),
-    vehicle_license_plate: lodash.get(tripUpdate, 'vehicle.license_plate', undefined),
-    recorded: moment(recorded).format('YYYY-MM-DD HH:mm:ss'),
-  };
-}
-
-/**
- * Create trip update stop time update object for db
- * @param tripUpdateId
- * @param stopTimeUpdateData
- */
-/*
-function createStopTimeUpdate(
-  tripUpdateId: string,
-  stopTimeUpdateData: StopTimeUpdate,
-): StopTimeUpdateDB {
-  return {
-    trip_update_id: tripUpdateId,
-    stop_sequence: stopTimeUpdateData.stop_sequence,
-    stop_id: stopTimeUpdateData.stop_id,
-    arrival_delay: lodash.get(stopTimeUpdateData, 'arrival.delay', null),
-    arrival_time: lodash.get(stopTimeUpdateData, 'arrival.time.low', null),
-    arrival_uncertainty: lodash.get(stopTimeUpdateData, 'arrival.uncertainty', null),
-    departure_delay: lodash.get(stopTimeUpdateData, 'departure.delay', null),
-    departure_time: lodash.get(stopTimeUpdateData, 'departure.time.low', null),
-    departure_uncertainty: lodash.get(stopTimeUpdateData, 'departure.uncertainty', null),
-    schedule_relationship: stopTimeUpdateData.schedule_relationship,
-  };
-}
-*/
