@@ -351,8 +351,19 @@ export class GtfsRTFeedProcessor {
           newStopTimeUpdate.departure_delay = delay || undefined;
         }
       } else {
+        // Unable to mach to stop time update, use previous delay
         newStopTimeUpdate.arrival_delay = delay;
         newStopTimeUpdate.departure_delay = delay;
+      }
+
+      if (
+        !newStopTimeUpdate.arrival_delay &&
+        !newStopTimeUpdate.arrival_time &&
+        !newStopTimeUpdate.departure_delay &&
+        !newStopTimeUpdate.departure_time
+      ) {
+        // If we do not have any times for stop time update, skip.
+        continue;
       }
 
       tripUpdateStopTimeUpdates.push(newStopTimeUpdate);
