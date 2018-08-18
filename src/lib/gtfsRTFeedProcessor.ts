@@ -320,7 +320,7 @@ export class GtfsRTFeedProcessor {
             }
           } else if (matchedStopTimeUpdate.arrival.time) {
             newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
-            // delay = calculate delay
+            delay = this.getDelay(matchedStopTimeUpdate.arrival.time, stopTime.arrival_time);
           } else {
             // No arrival, use previous delay if available
             newStopTimeUpdate.arrival_delay = delay || undefined;
@@ -341,7 +341,7 @@ export class GtfsRTFeedProcessor {
             }
           } else if (matchedStopTimeUpdate.departure.time) {
             newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
-            // delay = calculate delay
+            delay = this.getDelay(matchedStopTimeUpdate.departure.time, stopTime.departure_time);
           } else {
             // No departure, use previous delay if available
             newStopTimeUpdate.departure_delay = delay || undefined;
@@ -359,6 +359,21 @@ export class GtfsRTFeedProcessor {
     }
 
     return tripUpdateStopTimeUpdates;
+  }
+
+  /**
+   * Calculate delay between stop time update and stop time
+   * @param stopTimeUpdate
+   * @param stopTime
+   */
+  private getDelay(stopTimeUpdate: Timestamp, stopTime: string) {
+    const updateTime = moment(stopTimeUpdate.low * 1000);
+    const currentStopTimeParts = stopTime.split(':');
+    const currentStopTime = moment(updateTime)
+      .hour(parseInt(currentStopTimeParts[0], 10))
+      .minute(parseInt(currentStopTimeParts[1], 10))
+      .seconds(parseInt(currentStopTimeParts[2], 10));
+    return moment.duration(updateTime.diff(currentStopTime)).asSeconds();
   }
 
   /**
