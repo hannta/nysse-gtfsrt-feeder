@@ -117,7 +117,7 @@ export class GtfsRTFeedProcessor {
         !entity.trip_update.trip ||
         !entity.trip_update.stop_time_update
       ) {
-        winstonInstance.info('Empty trip update, skipping.', { entity });
+        winstonInstance.info('Empty trip update / entity, skipping.', { entity });
         continue;
       }
 
@@ -126,92 +126,55 @@ export class GtfsRTFeedProcessor {
         : new Date(feedData.header.timestamp.low * 1000);
       const tripDescriptor = entity.trip_update.trip;
 
-      if (tripDescriptor.trip_id) {
-        const tripStopTimes = await getTripStopTimes(this.regionName, tripDescriptor.trip_id);
-        if (!tripStopTimes || tripStopTimes.length < 1) {
-          // Incorrect trip / no trip stop times
-          winstonInstance.info('No stop times for trip.', { tripId: tripDescriptor.trip_id });
-          continue;
-        }
-
-        const tripStartDate = tripDescriptor.start_date
-          ? tripDescriptor.start_date
-          : this.findTripStartDate(tripDescriptor.trip_id, tripStopTimes); // E.g. Oulu feed does not have trip start :(
-        const tripStartTime = tripDescriptor.start_time
-          ? tripDescriptor.start_time
-          : tripStopTimes[0].departure_time;
-        let routeId = tripDescriptor.route_id;
-        let directionId = tripDescriptor.direction_id;
-        if (!routeId || !directionId) {
-          const trip = await getTripById(this.regionName, tripDescriptor.trip_id);
-          routeId = routeId || trip.route_id;
-          directionId = directionId || trip.direction_id;
-        }
-
-        const data = this.processTripUpdate({
-          tripId: tripDescriptor.trip_id,
-          tripStartDate,
-          tripStartTime,
-          tripStopTimeUpdates: entity.trip_update.stop_time_update,
-          tripStopTimes,
-          routeId,
-          directionId,
-          scheduleRelationship: tripDescriptor.schedule_relationship || 1,
-          recorded,
-          vehicle: entity.trip_update.vehicle,
-        });
-        dbTripUpdates.push(data.tripUpdate);
-        dbTripUpdateStopTimeUpdates.push(...data.stopTimeUpdates);
-      } else if (
-        !tripDescriptor.trip_id &&
-        tripDescriptor.route_id &&
-        tripDescriptor.direction_id &&
-        tripDescriptor.start_date &&
-        tripDescriptor.start_time
-      ) {
-        // No trip id, try to get from database
-        const tripId = await this.getTripIdFromDb(
-          tripDescriptor.route_id,
-          tripDescriptor.direction_id,
-          tripDescriptor.start_date,
-          tripDescriptor.start_time,
-        );
-
-        if (!tripId) {
-          // Failed to get trip id, skip this entity
-          winstonInstance.info('Unable to get trip id from db, skipping.', { tripDescriptor });
-          continue;
-        }
-
-        const tripStopTimes = await getTripStopTimes(this.regionName, tripId);
-        if (!tripStopTimes || tripStopTimes.length < 1) {
-          // Incorrect trip / no trip stop times
-          winstonInstance.info('No stop times for matched trip id, skipping.', { tripId });
-          continue;
-        }
-
-        const data = this.processTripUpdate({
-          tripId,
-          tripStartDate: tripDescriptor.start_date,
-          tripStartTime: tripDescriptor.start_time,
-          tripStopTimeUpdates: entity.trip_update.stop_time_update,
-          tripStopTimes,
-          routeId: tripDescriptor.route_id,
-          directionId: tripDescriptor.direction_id,
-          scheduleRelationship: tripDescriptor.schedule_relationship || 1,
-          recorded,
-          vehicle: entity.trip_update.vehicle,
-        });
-        dbTripUpdates.push(data.tripUpdate);
-        dbTripUpdateStopTimeUpdates.push(...data.stopTimeUpdates);
-      } else {
-        // Not enough info to process this trip update
-        winstonInstance.info(
-          'Trip update entity does not have enough information to process, skipping.',
-          { entity },
-        );
+      const tripId = tripDescriptor.trip_id
+        ? tripDescriptor.trip_id
+        : await this.getTripIdFromDb(
+            tripDescriptor.route_id,
+            tripDescriptor.direction_id,
+            tripDescriptor.start_date,
+            tripDescriptor.start_time,
+          );
+      if (!tripId) {
+        // Trip id missing and failed to get it from db
+        winstonInstance.info('No trip id and failed to get it from db', { tripDescriptor });
         continue;
       }
+
+      const tripStopTimes = await getTripStopTimes(this.regionName, tripId);
+      if (!tripStopTimes || tripStopTimes.length < 1) {
+        // Incorrect trip / no trip stop times
+        winstonInstance.info('No stop times for trip.', { tripId: tripDescriptor.trip_id });
+        continue;
+      }
+
+      const tripStartDate = tripDescriptor.start_date
+        ? tripDescriptor.start_date
+        : this.findTripStartDate(tripId, tripStopTimes); // E.g. Oulu feed does not have trip start :(
+      const tripStartTime = tripDescriptor.start_time
+        ? tripDescriptor.start_time
+        : tripStopTimes[0].departure_time;
+      let routeId = tripDescriptor.route_id;
+      let directionId = tripDescriptor.direction_id;
+      if (!routeId || !directionId) {
+        const trip = await getTripById(this.regionName, tripId);
+        routeId = routeId || trip.route_id;
+        directionId = directionId || trip.direction_id;
+      }
+
+      const data = this.processTripUpdate({
+        tripId,
+        tripStartDate,
+        tripStartTime,
+        tripStopTimeUpdates: entity.trip_update.stop_time_update,
+        tripStopTimes,
+        routeId,
+        directionId,
+        scheduleRelationship: tripDescriptor.schedule_relationship || 0,
+        recorded,
+        vehicle: entity.trip_update.vehicle,
+      });
+      dbTripUpdates.push(data.tripUpdate);
+      dbTripUpdateStopTimeUpdates.push(...data.stopTimeUpdates);
     }
 
     await updateDatabase(
@@ -405,11 +368,15 @@ export class GtfsRTFeedProcessor {
    * @param startTime
    */
   private async getTripIdFromDb(
-    routeId: string,
-    directionId: number,
-    startDate: string,
-    startTime: string,
+    routeId?: string,
+    directionId?: number,
+    startDate?: string,
+    startTime?: string,
   ) {
+    if (!routeId || !directionId || !startDate || !startTime) {
+      return undefined;
+    }
+
     const tripStart = moment(`${startDate} ${startTime}`, 'YYYYMMDD HH:mm:ss').toDate();
 
     // Get active services, and cache them
@@ -421,7 +388,7 @@ export class GtfsRTFeedProcessor {
     const activeServicesDay = this.activeServicesMap.get(startDate);
     if (!activeServicesDay || activeServicesDay.length < 1) {
       // Unable to get active services
-      return null;
+      return undefined;
     }
 
     return getTripId(this.regionName, routeId, tripStart, directionId, activeServicesDay);

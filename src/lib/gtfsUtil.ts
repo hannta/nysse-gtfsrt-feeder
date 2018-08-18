@@ -65,7 +65,7 @@ export async function getTripId(
   originDeparture: Date,
   direction: number,
   activeServices: string[],
-): Promise<string | null> {
+): Promise<string | undefined> {
   const tripsTable = `${regionName}_trips`;
   const routesTable = `${regionName}_routes`;
   const stopTimesTable = `${regionName}_stop_times`;
@@ -85,7 +85,7 @@ export async function getTripId(
     .orderBy(`${stopTimesTable}.stop_sequence`)
     .first();
 
-  return trip ? trip.trip_id : null;
+  return trip ? trip.trip_id : undefined;
 }
 
 /**
