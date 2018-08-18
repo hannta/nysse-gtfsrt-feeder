@@ -1,5 +1,6 @@
 import moment from 'moment';
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
+import winstonInstance from '../config/winston';
 import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from '../lib/databaseUpdater';
 import {
   getActiveServiceIds,
@@ -124,7 +125,7 @@ export class GtfsRTFeedProcessor {
         !entity.trip_update.trip ||
         !entity.trip_update.stop_time_update
       ) {
-        // No data, skip
+        winstonInstance.info('Empty trip update, skipping.', entity);
         continue;
       }
 
@@ -137,6 +138,7 @@ export class GtfsRTFeedProcessor {
         const tripStopTimes = await getTripStopTimes(this.regionName, tripDescriptor.trip_id);
         if (!tripStopTimes || tripStopTimes.length < 1) {
           // Incorrect trip / no trip stop times
+          winstonInstance.info('No stop times for trip.', { tripId: tripDescriptor.trip_id });
           continue;
         }
 
@@ -146,12 +148,13 @@ export class GtfsRTFeedProcessor {
         const tripStartTime = tripDescriptor.start_time
           ? tripDescriptor.start_time
           : tripStopTimes[0].departure_time;
-        const routeId = tripDescriptor.route_id
-          ? tripDescriptor.route_id
-          : (await getTripById(this.regionName, tripDescriptor.trip_id)).route_id;
-        const directionId = tripDescriptor.direction_id
-          ? tripDescriptor.direction_id
-          : (await getTripById(this.regionName, tripDescriptor.trip_id)).direction_id;
+        let routeId = tripDescriptor.route_id;
+        let directionId = tripDescriptor.direction_id;
+        if (!routeId || !directionId) {
+          const trip = await getTripById(this.regionName, tripDescriptor.trip_id);
+          routeId = routeId || trip.route_id;
+          directionId = directionId || trip.direction_id;
+        }
 
         const data = this.processTripUpdate({
           tripId: tripDescriptor.trip_id,
@@ -185,12 +188,14 @@ export class GtfsRTFeedProcessor {
 
         if (!tripId) {
           // Failed to get trip id, skip this entity
+          winstonInstance.info('Unable to get trip id from db, skipping.', entity);
           continue;
         }
 
         const tripStopTimes = await getTripStopTimes(this.regionName, tripId);
         if (!tripStopTimes || tripStopTimes.length < 1) {
           // Incorrect trip / no trip stop times
+          winstonInstance.info('No stop times for matched trip id, skipping.', entity);
           continue;
         }
 
@@ -210,6 +215,10 @@ export class GtfsRTFeedProcessor {
         dbTripUpdateStopTimeUpdates.push(...data.stopTimeUpdates);
       } else {
         // Not enough info to process this trip update
+        winstonInstance.info(
+          'Trip update entity does not have enough information, skipping.',
+          entity,
+        );
         continue;
       }
     }
