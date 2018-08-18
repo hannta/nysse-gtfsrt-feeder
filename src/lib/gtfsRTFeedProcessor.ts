@@ -352,10 +352,8 @@ export class GtfsRTFeedProcessor {
           newStopTimeUpdate.departure_delay = delay || undefined;
         }
       } else {
-        if (delay) {
-          newStopTimeUpdate.arrival_delay = delay;
-          newStopTimeUpdate.departure_delay = delay;
-        }
+        newStopTimeUpdate.arrival_delay = delay;
+        newStopTimeUpdate.departure_delay = delay;
       }
 
       tripUpdateStopTimeUpdates.push(newStopTimeUpdate);
