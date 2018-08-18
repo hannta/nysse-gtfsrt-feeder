@@ -117,7 +117,7 @@ export class GtfsRTFeedProcessor {
         !entity.trip_update.trip ||
         !entity.trip_update.stop_time_update
       ) {
-        winstonInstance.info('Empty trip update, skipping.', entity);
+        winstonInstance.info('Empty trip update, skipping.', { entity });
         continue;
       }
 
@@ -179,7 +179,7 @@ export class GtfsRTFeedProcessor {
 
         if (!tripId) {
           // Failed to get trip id, skip this entity
-          winstonInstance.info('Unable to get trip id from db, skipping.', tripDescriptor);
+          winstonInstance.info('Unable to get trip id from db, skipping.', { tripDescriptor });
           continue;
         }
 
@@ -208,7 +208,7 @@ export class GtfsRTFeedProcessor {
         // Not enough info to process this trip update
         winstonInstance.info(
           'Trip update entity does not have enough information to process, skipping.',
-          entity,
+          { entity },
         );
         continue;
       }
@@ -258,7 +258,6 @@ export class GtfsRTFeedProcessor {
       tripStopTimes,
       tripStopTimeUpdates,
     );
-
     const tripUpdateDb = {
       id: tripUpdateId,
       trip_id: tripId,
@@ -327,7 +326,7 @@ export class GtfsRTFeedProcessor {
             newStopTimeUpdate.arrival_delay = delay || undefined;
           }
         } else {
-          // No arrival, use previous delay if available
+          // No arrival data at all, use previous delay if available
           newStopTimeUpdate.arrival_delay = delay || undefined;
         }
 
@@ -348,7 +347,7 @@ export class GtfsRTFeedProcessor {
             newStopTimeUpdate.departure_delay = delay || undefined;
           }
         } else {
-          // No departure, use previous delay if available
+          // No departure data at all, use previous delay if available
           newStopTimeUpdate.departure_delay = delay || undefined;
         }
       } else {
