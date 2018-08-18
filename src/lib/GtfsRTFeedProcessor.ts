@@ -1,14 +1,14 @@
 import moment from 'moment';
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import winstonInstance from '../config/winston';
-import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from '../lib/databaseUpdater';
+import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from './databaseUpdater';
 import {
   getActiveServiceIds,
   getTripId,
   getTripStopTimes,
   StopTime,
   getTripById,
-} from '../lib/gtfsUtil';
+} from './gtfsUtil';
 
 /**
  * GTFS-RT feed processor config options
