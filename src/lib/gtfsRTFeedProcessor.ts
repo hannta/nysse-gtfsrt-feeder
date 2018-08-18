@@ -323,7 +323,8 @@ export class GtfsRTFeedProcessor {
             newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
             // delay = calculate delay
           } else {
-            // Incorrect arrival
+            // No arrival, use previous delay if available
+            newStopTimeUpdate.arrival_delay = delay || undefined;
           }
         } else {
           // No arrival, use previous delay if available
@@ -343,7 +344,8 @@ export class GtfsRTFeedProcessor {
             newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
             // delay = calculate delay
           } else {
-            // Incorrect departure
+            // No departure, use previous delay if available
+            newStopTimeUpdate.departure_delay = delay || undefined;
           }
         } else {
           // No departure, use previous delay if available
