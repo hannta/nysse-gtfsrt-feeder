@@ -14,14 +14,6 @@ import {
  * GTFS-RT feed processor config options
  */
 export interface GtfsRTFeedProcessorSettings {
-  /** If trip id is missing, try to get trip form database */
-  getMissingTripFromDB?: boolean;
-  /** Get trip id always from database */
-  getTripAlwaysFromDB?: boolean;
-  /** If stop id is missing, try to get that from database */
-  tryToFixMissingStopId?: boolean;
-  /** If stop sequence is missing, try to get that from database */
-  tryToFixMissingStopSequence?: boolean;
   /** How old records to keep, seconds  */
   keepOldRecords?: number;
 }
@@ -93,10 +85,10 @@ interface StopTimeEvent {
  */
 export class GtfsRTFeedProcessor {
   private readonly regionName: string;
-  private readonly options: GtfsRTFeedProcessorSettings;
-  private activeServicesMap: Map<string, string[]>;
+  private readonly options?: GtfsRTFeedProcessorSettings;
+  private readonly activeServicesMap: Map<string, string[]>;
 
-  constructor(regionName: string, options: GtfsRTFeedProcessorSettings) {
+  constructor(regionName: string, options?: GtfsRTFeedProcessorSettings) {
     this.regionName = regionName;
     this.options = options;
     this.activeServicesMap = new Map<string, string[]>();
@@ -144,7 +136,7 @@ export class GtfsRTFeedProcessor {
 
         const tripStartDate = tripDescriptor.start_date
           ? tripDescriptor.start_date
-          : this.findTripStartDate(tripDescriptor.trip_id, tripStopTimes);
+          : this.findTripStartDate(tripDescriptor.trip_id, tripStopTimes); // E.g. Oulu feed does not have trip start :(
         const tripStartTime = tripDescriptor.start_time
           ? tripDescriptor.start_time
           : tripStopTimes[0].departure_time;
@@ -168,7 +160,6 @@ export class GtfsRTFeedProcessor {
           recorded,
           vehicle: entity.trip_update.vehicle,
         });
-
         dbTripUpdates.push(data.tripUpdate);
         dbTripUpdateStopTimeUpdates.push(...data.stopTimeUpdates);
       } else if (
@@ -188,14 +179,14 @@ export class GtfsRTFeedProcessor {
 
         if (!tripId) {
           // Failed to get trip id, skip this entity
-          winstonInstance.info('Unable to get trip id from db, skipping.', entity);
+          winstonInstance.info('Unable to get trip id from db, skipping.', tripDescriptor);
           continue;
         }
 
         const tripStopTimes = await getTripStopTimes(this.regionName, tripId);
         if (!tripStopTimes || tripStopTimes.length < 1) {
           // Incorrect trip / no trip stop times
-          winstonInstance.info('No stop times for matched trip id, skipping.', entity);
+          winstonInstance.info('No stop times for matched trip id, skipping.', { tripId });
           continue;
         }
 
@@ -216,7 +207,7 @@ export class GtfsRTFeedProcessor {
       } else {
         // Not enough info to process this trip update
         winstonInstance.info(
-          'Trip update entity does not have enough information, skipping.',
+          'Trip update entity does not have enough information to process, skipping.',
           entity,
         );
         continue;
@@ -227,16 +218,17 @@ export class GtfsRTFeedProcessor {
       this.regionName,
       dbTripUpdates,
       dbTripUpdateStopTimeUpdates,
-      this.options.keepOldRecords,
+      this.options ? this.options.keepOldRecords : undefined,
     );
+
+    this.activeServicesMap.clear();
     return dbTripUpdates.length;
   }
 
-  private findTripStartDate(tripId: string, tripStopTimes: StopTime[]) {
-    // TODO!
-    return moment().format('YYYYMMDD');
-  }
-
+  /**
+   * Process trip update, create tripUpdateDb and stop time updates
+   * @param param
+   */
   private processTripUpdate({
     tripId,
     tripStartDate,
@@ -368,6 +360,16 @@ export class GtfsRTFeedProcessor {
     }
 
     return tripUpdateStopTimeUpdates;
+  }
+
+  /**
+   * Try to find trip start date for trip
+   * @param tripId
+   * @param tripStopTimes
+   */
+  private findTripStartDate(tripId: string, tripStopTimes: StopTime[]) {
+    // TODO!
+    return moment().format('YYYYMMDD');
   }
 
   /**

@@ -19,10 +19,7 @@ export class GtfsRtProvider implements DataProvider {
     name: string,
     gtfsRTFeedUrl: string,
     updateInterval: number,
-    gtfsRTFeedProcessorSettings: GtfsRTFeedProcessorSettings = {
-      getMissingTripFromDB: true,
-      tryToFixMissingStopId: true,
-    },
+    gtfsRTFeedProcessorSettings?: GtfsRTFeedProcessorSettings,
   ) {
     this.name = name;
     this.gtfsRTFeedUrl = gtfsRTFeedUrl;
