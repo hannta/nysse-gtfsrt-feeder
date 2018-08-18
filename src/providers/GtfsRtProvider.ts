@@ -8,13 +8,14 @@ import { DataProvider } from '../providers';
  * Fetches data from GTFS-RT data source and stores it to database
  */
 export class GtfsRtProvider implements DataProvider {
-  public name: string;
+  public readonly name: string;
 
-  public updateInterval: number;
+  public readonly updateInterval: number;
 
-  private gtfsRTFeedUrl: string;
+  private readonly gtfsRTFeedUrl: string;
 
   private readonly gtfsRTFeedProcessor: GtfsRTFeedProcessor;
+
   constructor(
     name: string,
     gtfsRTFeedUrl: string,
