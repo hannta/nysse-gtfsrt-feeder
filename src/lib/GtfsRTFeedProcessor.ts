@@ -135,14 +135,14 @@ export class GtfsRTFeedProcessor {
             tripDescriptor.start_time,
           );
       if (!tripId) {
-        // Trip id missing and failed to get it from db
+        // Trip id missing from GTFS-RT data and failed to get trip id from Nysse database
         winstonInstance.info('No trip id and failed to get it from db', { tripDescriptor });
         continue;
       }
 
       const tripStopTimes = await getTripStopTimes(this.regionName, tripId);
       if (!tripStopTimes || tripStopTimes.length < 1) {
-        // Incorrect trip / no trip stop times
+        // Incorrect trip / no trip stop times found from Nysse database
         winstonInstance.info('No stop times for trip.', { tripId: tripDescriptor.trip_id });
         continue;
       }
@@ -357,6 +357,8 @@ export class GtfsRTFeedProcessor {
    */
   private findTripStartDate(tripId: string, tripStopTimes: StopTime[]) {
     // TODO!
+    // This is used in Oulu as their GTFS-RT data does not contain trip start
+    // With this implementation, trip updates which runs over midnight, does not work after midnight
     return moment().format('YYYYMMDD');
   }
 
