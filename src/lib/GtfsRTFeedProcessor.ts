@@ -117,7 +117,10 @@ export class GtfsRTFeedProcessor {
         !entity.trip_update.trip ||
         !entity.trip_update.stop_time_update
       ) {
-        winstonInstance.info('Empty trip update / entity, skipping.', { entity });
+        winstonInstance.info('Empty trip update / entity, skipping.', {
+          regionKey: this.regionKey,
+          entity,
+        });
         continue;
       }
 
@@ -136,14 +139,20 @@ export class GtfsRTFeedProcessor {
           );
       if (!tripId) {
         // Trip id missing from GTFS-RT data and failed to get trip id from Nysse database
-        winstonInstance.info('No trip id and failed to get it from db', { tripDescriptor });
+        winstonInstance.info('No trip id and failed to get it from db', {
+          regionKey: this.regionKey,
+          tripDescriptor,
+        });
         continue;
       }
 
       const tripStopTimes = await getTripStopTimes(this.regionKey, tripId);
       if (!tripStopTimes || tripStopTimes.length < 1) {
         // Incorrect trip / no trip stop times found from Nysse database
-        winstonInstance.info('No stop times for trip.', { tripId: tripDescriptor.trip_id });
+        winstonInstance.info('No stop times for trip.', {
+          regionKey: this.regionKey,
+          tripId: tripDescriptor.trip_id,
+        });
         continue;
       }
 
