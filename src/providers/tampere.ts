@@ -8,7 +8,7 @@ import { DataProvider } from '../providers';
  * Fetches data from Tampere SIRI api and stores it to database
  */
 export class TampereProvider implements DataProvider {
-  public name = 'tampere';
+  public regionKey = 'tampere';
 
   public updateInterval = parseInt(process.env.TAMPERE_UPDATE_INTERVAL!, 10);
 
@@ -23,6 +23,6 @@ export class TampereProvider implements DataProvider {
     };
 
     const resp = await axios.request(requestConfig);
-    return storeTripUpdateFeed(this.name, resp.data);
+    return storeTripUpdateFeed(this.regionKey, resp.data);
   }
 }

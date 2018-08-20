@@ -8,7 +8,7 @@ import { DataProvider } from '../providers';
  * Fetches data from Turku SIRI api and stores it to database
  */
 export class TurkuProvider implements DataProvider {
-  public name = 'turku';
+  public regionKey = 'turku';
 
   public updateInterval = parseInt(process.env.TURKU_UPDATE_INTERVAL!, 10);
 
@@ -23,6 +23,6 @@ export class TurkuProvider implements DataProvider {
     };
 
     const resp = await axios.request(requestConfig);
-    return storeTripUpdateFeed(this.name, resp.data);
+    return storeTripUpdateFeed(this.regionKey, resp.data);
   }
 }

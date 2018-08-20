@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from '../config/config';
-import { storeTripUpdateFeed, GtfsRTFeedProcessorSettings } from '../lib/gtfsRTFeedProcessor';
+import { GtfsRTFeedProcessorSettings, GtfsRTFeedProcessor } from '../lib/GtfsRTFeedProcessor';
 import { DataProvider } from '../providers';
 
 /**
@@ -8,27 +8,24 @@ import { DataProvider } from '../providers';
  * Fetches data from GTFS-RT data source and stores it to database
  */
 export class GtfsRtProvider implements DataProvider {
-  public name: string;
+  public readonly regionKey: string;
 
-  public updateInterval: number;
+  public readonly updateInterval: number;
 
-  private gtfsRTFeedUrl: string;
+  private readonly gtfsRTFeedUrl: string;
 
-  private gtfsRTFeedProcessorSettings: GtfsRTFeedProcessorSettings;
+  private readonly gtfsRTFeedProcessor: GtfsRTFeedProcessor;
 
   constructor(
-    name: string,
+    regionKey: string,
     gtfsRTFeedUrl: string,
     updateInterval: number,
-    gtfsRTFeedProcessorSettings: GtfsRTFeedProcessorSettings = {
-      getMissingTripFromDB: true,
-      tryToFixMissingStopId: true,
-    },
+    gtfsRTFeedProcessorSettings?: GtfsRTFeedProcessorSettings,
   ) {
-    this.name = name;
+    this.regionKey = regionKey;
     this.gtfsRTFeedUrl = gtfsRTFeedUrl;
     this.updateInterval = updateInterval;
-    this.gtfsRTFeedProcessorSettings = gtfsRTFeedProcessorSettings;
+    this.gtfsRTFeedProcessor = new GtfsRTFeedProcessor(regionKey, gtfsRTFeedProcessorSettings);
   }
 
   public async getTripUpdates() {
@@ -43,7 +40,6 @@ export class GtfsRtProvider implements DataProvider {
     };
 
     const resp = await axios.request(requestConfig);
-
-    return storeTripUpdateFeed(this.name, resp.data, this.gtfsRTFeedProcessorSettings);
+    return this.gtfsRTFeedProcessor.storeTripUpdateFeed(resp.data);
   }
 }

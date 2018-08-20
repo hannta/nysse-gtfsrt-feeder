@@ -2,7 +2,20 @@ import moment from 'moment';
 import { QueryBuilder } from 'knex';
 import { knex } from '../config/database';
 
+export interface Trip {
+  trip_id: string;
+  route_id: string;
+  direction_id: number;
+}
+
 export interface TripStop {
+  stop_id: string;
+  stop_sequence: number;
+}
+
+export interface StopTime {
+  arrival_time: string;
+  departure_time: string;
   stop_id: string;
   stop_sequence: number;
 }
@@ -26,6 +39,19 @@ export async function getTripStops(regionName: string, tripId: string): Promise<
 }
 
 /**
+ * Get trip by trip id
+ * @param regionName
+ * @param tripId
+ */
+export async function getTripById(regionName: string, tripId: string): Promise<Trip> {
+  const tripsTable = `${regionName}_trips`;
+  return knex(tripsTable)
+    .select('route_id', 'trip_id', 'direction_id')
+    .where('trip_id', tripId)
+    .first();
+}
+
+/**
  * Try get trip id from database
  * @param regionName
  * @param routeId
@@ -39,7 +65,7 @@ export async function getTripId(
   originDeparture: Date,
   direction: number,
   activeServices: string[],
-): Promise<string | null> {
+): Promise<string | undefined> {
   const tripsTable = `${regionName}_trips`;
   const routesTable = `${regionName}_routes`;
   const stopTimesTable = `${regionName}_stop_times`;
@@ -59,7 +85,7 @@ export async function getTripId(
     .orderBy(`${stopTimesTable}.stop_sequence`)
     .first();
 
-  return trip ? trip.trip_id : null;
+  return trip ? trip.trip_id : undefined;
 }
 
 /**
@@ -128,4 +154,17 @@ export async function getRouteIdMappings(regionName: string) {
       return [route.route_short_name, route.route_id];
     }),
   );
+}
+
+/**
+ * Get trip stop times
+ * @param regionName
+ * @param tripId
+ */
+export async function getTripStopTimes(regionName: string, tripId: string): Promise<StopTime[]> {
+  const stopTimesTable = `${regionName}_stop_times`;
+  return knex(stopTimesTable)
+    .select('arrival_time', 'departure_time', 'stop_id', 'stop_sequence')
+    .where('trip_id', tripId)
+    .orderBy('stop_sequence');
 }
