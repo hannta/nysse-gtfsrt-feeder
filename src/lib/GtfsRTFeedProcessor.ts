@@ -84,12 +84,12 @@ interface StopTimeEvent {
  * Parses GTFS-RT trip update feed and stores data to database
  */
 export class GtfsRTFeedProcessor {
-  private readonly regionName: string;
+  private readonly regionKey: string;
   private readonly options?: GtfsRTFeedProcessorSettings;
   private readonly activeServicesMap: Map<string, string[]>;
 
-  constructor(regionName: string, options?: GtfsRTFeedProcessorSettings) {
-    this.regionName = regionName;
+  constructor(regionKey: string, options?: GtfsRTFeedProcessorSettings) {
+    this.regionKey = regionKey;
     this.options = options;
     this.activeServicesMap = new Map<string, string[]>();
   }
@@ -140,7 +140,7 @@ export class GtfsRTFeedProcessor {
         continue;
       }
 
-      const tripStopTimes = await getTripStopTimes(this.regionName, tripId);
+      const tripStopTimes = await getTripStopTimes(this.regionKey, tripId);
       if (!tripStopTimes || tripStopTimes.length < 1) {
         // Incorrect trip / no trip stop times found from Nysse database
         winstonInstance.info('No stop times for trip.', { tripId: tripDescriptor.trip_id });
@@ -156,7 +156,7 @@ export class GtfsRTFeedProcessor {
       let routeId = tripDescriptor.route_id;
       let directionId = tripDescriptor.direction_id;
       if (!routeId || !directionId) {
-        const trip = await getTripById(this.regionName, tripId);
+        const trip = await getTripById(this.regionKey, tripId);
         routeId = routeId || trip.route_id;
         directionId = directionId || trip.direction_id;
       }
@@ -178,7 +178,7 @@ export class GtfsRTFeedProcessor {
     }
 
     await updateDatabase(
-      this.regionName,
+      this.regionKey,
       dbTripUpdates,
       dbTripUpdateStopTimeUpdates,
       this.options ? this.options.keepOldRecords : undefined,
@@ -383,7 +383,7 @@ export class GtfsRTFeedProcessor {
 
     // Get active services, and cache them
     if (!this.activeServicesMap.has(startDate)) {
-      const activeServices = await getActiveServiceIds(this.regionName, tripStart);
+      const activeServices = await getActiveServiceIds(this.regionKey, tripStart);
       this.activeServicesMap.set(startDate, activeServices);
     }
 
@@ -393,6 +393,6 @@ export class GtfsRTFeedProcessor {
       return undefined;
     }
 
-    return getTripId(this.regionName, routeId, tripStart, directionId, activeServicesDay);
+    return getTripId(this.regionKey, routeId, tripStart, directionId, activeServicesDay);
   }
 }

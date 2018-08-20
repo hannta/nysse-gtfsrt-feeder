@@ -5,7 +5,7 @@ import { TurkuProvider } from '../providers/turku';
 import { GtfsRtProvider } from './GtfsRtProvider';
 
 export interface DataProvider {
-  name: string;
+  regionKey: string;
   updateInterval: number;
   getTripUpdates: () => Promise<number>;
 }
@@ -47,7 +47,7 @@ const dataProviders: DataProvider[] = [
   ),
 
   new GtfsRtProvider(
-    'joensuu',
+    'jyvaskyla',
     process.env.JYVASKYLA_UPDATES_URL!,
     parseInt(process.env.JYVASKYLA_UPDATE_INTERVAL!, 10),
   ),
@@ -64,17 +64,17 @@ export const statusDataMap = new Map<string, DataProviderStatus>();
 
 export async function startDataProviders() {
   for (const dataProvider of dataProviders) {
-    winstonInstance.info(`Starting data provider ${dataProvider.name}`);
+    winstonInstance.info(`Starting data provider ${dataProvider.regionKey}`);
 
     const getData = async () => {
       try {
         const tripUpdateCount = await dataProvider.getTripUpdates();
-        statusDataMap.set(dataProvider.name, {
+        statusDataMap.set(dataProvider.regionKey, {
           updated: moment().format(),
           lastTripUpdateCount: tripUpdateCount,
         });
       } catch (error) {
-        winstonInstance.error(`Data provider ${dataProvider.name} error`, { error });
+        winstonInstance.error(`Data provider ${dataProvider.regionKey} error`, { error });
       } finally {
         setTimeout(getData, dataProvider.updateInterval);
       }

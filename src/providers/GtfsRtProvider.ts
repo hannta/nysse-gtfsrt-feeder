@@ -8,7 +8,7 @@ import { DataProvider } from '../providers';
  * Fetches data from GTFS-RT data source and stores it to database
  */
 export class GtfsRtProvider implements DataProvider {
-  public readonly name: string;
+  public readonly regionKey: string;
 
   public readonly updateInterval: number;
 
@@ -17,15 +17,15 @@ export class GtfsRtProvider implements DataProvider {
   private readonly gtfsRTFeedProcessor: GtfsRTFeedProcessor;
 
   constructor(
-    name: string,
+    regionKey: string,
     gtfsRTFeedUrl: string,
     updateInterval: number,
     gtfsRTFeedProcessorSettings?: GtfsRTFeedProcessorSettings,
   ) {
-    this.name = name;
+    this.regionKey = regionKey;
     this.gtfsRTFeedUrl = gtfsRTFeedUrl;
     this.updateInterval = updateInterval;
-    this.gtfsRTFeedProcessor = new GtfsRTFeedProcessor(name, gtfsRTFeedProcessorSettings);
+    this.gtfsRTFeedProcessor = new GtfsRTFeedProcessor(regionKey, gtfsRTFeedProcessorSettings);
   }
 
   public async getTripUpdates() {
