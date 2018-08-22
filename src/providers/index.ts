@@ -74,7 +74,9 @@ export async function startDataProviders() {
           lastTripUpdateCount: tripUpdateCount,
         });
       } catch (error) {
-        winstonInstance.error(`Data provider ${dataProvider.regionKey} error`, { error });
+        winstonInstance.error(`Data provider ${dataProvider.regionKey} error`, {
+          error: error.message,
+        });
       } finally {
         setTimeout(getData, dataProvider.updateInterval);
       }
