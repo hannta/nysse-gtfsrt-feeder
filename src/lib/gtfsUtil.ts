@@ -80,7 +80,7 @@ export async function getTripId(
       `${stopTimesTable}.departure_time`,
       'like',
       moment(originDeparture).format('HH:mm') + '%',
-    ) // Do not try to mach seconds, as vehicle api might returns only minutes (case Tampere siri api)
+    ) // Do not try to mach seconds, as vehicle api might return only minutes (case Tampere siri api)
     .andWhere(`${tripsTable}.direction_id`, direction)
     .orderBy(`${stopTimesTable}.stop_sequence`)
     .first();
