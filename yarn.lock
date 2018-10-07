@@ -50,12 +50,11 @@
     "@types/express-serve-static-core" "*"
     "@types/serve-static" "*"
 
-"@types/knex@^0.14.23":
-  version "0.14.23"
-  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.14.23.tgz#8145977f96bc8014ec17c22d8aa0a1e0cc86934b"
+"@types/knex@^0.14.26":
+  version "0.14.26"
+  resolved "https://registry.yarnpkg.com/@types/knex/-/knex-0.14.26.tgz#18c1b5d5a7e44bb0d394209f7e0e965b2987ce57"
   dependencies:
     "@types/bluebird" "*"
-    "@types/events" "*"
     "@types/node" "*"
 
 "@types/lodash@^4.14.116":
@@ -1068,6 +1067,10 @@ lodash@^4.17.10:
   version "4.17.10"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
 
+lodash@^4.17.11:
+  version "4.17.11"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
+
 logform@^1.9.1:
   version "1.9.1"
   resolved "https://registry.yarnpkg.com/logform/-/logform-1.9.1.tgz#58b29d7b11c332456d7a217e17b48a13ad69d60a"
@@ -1733,9 +1736,9 @@ type-is@~1.6.15, type-is@~1.6.16:
     media-typer "0.3.0"
     mime-types "~2.1.18"
 
-typescript@^3.0.3:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.0.3.tgz#4853b3e275ecdaa27f78fda46dc273a7eb7fc1c8"
+typescript@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.1.1.tgz#3362ba9dd1e482ebb2355b02dfe8bcd19a2c7c96"
 
 unc-path-regex@^0.1.2:
   version "0.1.2"
