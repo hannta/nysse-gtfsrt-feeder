@@ -41,23 +41,23 @@ const dataProviders: DataProvider[] = [
     process.env.KUOPIO_UPDATES_URL!,
     parseInt(process.env.KUOPIO_UPDATE_INTERVAL!, 10),
   ),
+  /*
   new GtfsRtProvider(
     'joensuu',
     process.env.JOENSUU_UPDATES_URL!,
     parseInt(process.env.JOENSUU_UPDATE_INTERVAL!, 10),
   ),
-
   new GtfsRtProvider(
     'jyvaskyla',
     process.env.JYVASKYLA_UPDATES_URL!,
     parseInt(process.env.JYVASKYLA_UPDATE_INTERVAL!, 10),
   ),
-
   new GtfsRtProvider(
     'lappeenranta',
     process.env.LAPPEENRANTA_UPDATES_URL!,
     parseInt(process.env.LAPPEENRANTA_UPDATE_INTERVAL!, 10),
   ),
+  */
 ];
 
 export const statusDataMap = new Map<string, DataProviderStatus>();
