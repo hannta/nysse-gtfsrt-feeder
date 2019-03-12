@@ -32,16 +32,16 @@ const dataProviders: DataProvider[] = [
     parseInt(process.env.OULU_UPDATE_INTERVAL!, 10),
   ),
   new GtfsRtProvider(
-    'lahti',
-    process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL!,
-    parseInt(process.env.LAHTI_UPDATE_INTERVAL!, 10),
-  ),
-  new GtfsRtProvider(
     'kuopio',
     process.env.KUOPIO_UPDATES_URL!,
     parseInt(process.env.KUOPIO_UPDATE_INTERVAL!, 10),
   ),
   /*
+    new GtfsRtProvider(
+    'lahti',
+    process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL!,
+    parseInt(process.env.LAHTI_UPDATE_INTERVAL!, 10),
+  ),
   new GtfsRtProvider(
     'joensuu',
     process.env.JOENSUU_UPDATES_URL!,
