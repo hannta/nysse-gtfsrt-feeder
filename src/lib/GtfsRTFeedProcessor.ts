@@ -26,13 +26,7 @@ interface FeedMessage {
 interface FeedHeader {
   gtfsRealtimeVersion: string;
   incrementality: number; // Enum
-  timestamp: Timestamp;
-}
-
-interface Timestamp {
-  low: number;
-  high: number;
-  unsigned: boolean;
+  timestamp: number;
 }
 
 interface FeedEntity {
@@ -45,7 +39,7 @@ interface TripUpdate {
   trip: TripDescriptor;
   vehicle?: VehicleDescriptor;
   stopTimeUpdate?: StopTimeUpdate[];
-  timestamp?: Timestamp;
+  timestamp?: number;
   delay?: number;
 }
 
@@ -74,7 +68,7 @@ interface StopTimeUpdate {
 
 interface StopTimeEvent {
   delay?: number;
-  time?: Timestamp;
+  time?: number;
   uncertainty?: number;
 }
 
@@ -113,6 +107,7 @@ export class GtfsRTFeedProcessor {
     const dbTripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
 
     for (const entity of feedData.entity) {
+      console.log(JSON.stringify(entity, null, 4));
       if (
         !entity ||
         !entity.tripUpdate ||
@@ -127,8 +122,8 @@ export class GtfsRTFeedProcessor {
       }
 
       const recorded = entity.tripUpdate.timestamp
-        ? new Date(entity.tripUpdate.timestamp.low * 1000)
-        : new Date(feedData.header.timestamp.low * 1000);
+        ? new Date(entity.tripUpdate.timestamp * 1000)
+        : new Date(feedData.header.timestamp * 1000);
       const tripDescriptor = entity.tripUpdate.trip;
 
       const tripId = tripDescriptor.tripId
@@ -288,12 +283,12 @@ export class GtfsRTFeedProcessor {
           if (matchedStopTimeUpdate.arrival.delay) {
             delay = matchedStopTimeUpdate.arrival.delay;
             if (matchedStopTimeUpdate.arrival.time) {
-              newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
+              newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time;
             } else {
               newStopTimeUpdate.arrival_delay = matchedStopTimeUpdate.arrival.delay;
             }
           } else if (matchedStopTimeUpdate.arrival.time) {
-            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
+            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time;
             delay = this.getDelay(matchedStopTimeUpdate.arrival.time, stopTime.arrival_time);
           } else {
             // No arrival, use previous delay if available
@@ -309,12 +304,12 @@ export class GtfsRTFeedProcessor {
           if (matchedStopTimeUpdate.departure.delay) {
             delay = matchedStopTimeUpdate.departure.delay;
             if (matchedStopTimeUpdate.departure.time) {
-              newStopTimeUpdate.departure_time = matchedStopTimeUpdate.departure.time.low;
+              newStopTimeUpdate.departure_time = matchedStopTimeUpdate.departure.time;
             } else {
               newStopTimeUpdate.departure_delay = matchedStopTimeUpdate.departure.delay;
             }
           } else if (matchedStopTimeUpdate.departure.time) {
-            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
+            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time;
             delay = this.getDelay(matchedStopTimeUpdate.departure.time, stopTime.departure_time);
           } else {
             // No departure, use previous delay if available
@@ -351,8 +346,8 @@ export class GtfsRTFeedProcessor {
    * @param stopTimeUpdate
    * @param stopTime
    */
-  private getDelay(stopTimeUpdate: Timestamp, stopTime: string) {
-    const updateTime = moment(stopTimeUpdate.low * 1000);
+  private getDelay(stopTimeUpdate: number, stopTime: string) {
+    const updateTime = moment(stopTimeUpdate * 1000);
     const currentStopTimeParts = stopTime.split(':');
     const currentStopTime = moment(updateTime)
       .hour(parseInt(currentStopTimeParts[0], 10))
