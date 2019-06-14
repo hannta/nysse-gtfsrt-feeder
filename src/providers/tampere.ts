@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from '../config/config';
-import { storeTripUpdateFeed } from '../lib/tampereSiriFeedProcessor';
+import { storeTripUpdateFeed } from '../lib/tampereJourneysApiFeedProcessor';
 import { DataProvider } from '../providers';
 
 /**
