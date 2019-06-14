@@ -107,7 +107,6 @@ export class GtfsRTFeedProcessor {
     const dbTripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
 
     for (const entity of feedData.entity) {
-      console.log(JSON.stringify(entity, null, 4));
       if (
         !entity ||
         !entity.tripUpdate ||
