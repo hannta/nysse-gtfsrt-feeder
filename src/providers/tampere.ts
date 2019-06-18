@@ -4,8 +4,8 @@ import { storeTripUpdateFeed } from '../lib/tampereJourneysApiFeedProcessor';
 import { DataProvider } from '../providers';
 
 /**
- * Tampere SIRI provider
- * Fetches data from Tampere SIRI api and stores it to database
+ * Tampere Journeys api provider
+ * Fetches data from Tampere journeys api and stores it to database
  */
 export class TampereProvider implements DataProvider {
   public regionKey = 'tampere';
