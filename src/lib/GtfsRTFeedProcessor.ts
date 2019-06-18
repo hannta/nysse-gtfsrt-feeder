@@ -98,6 +98,8 @@ export class GtfsRTFeedProcessor {
       feedBinary,
     );
 
+    console.log(JSON.stringify(feedData, null, 4));
+
     if (!feedData || !feedData.entity) {
       // There should be at least empty entity(?)
       throw new Error('No feed data');
