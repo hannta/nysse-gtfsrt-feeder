@@ -85,7 +85,7 @@ export async function storeTripUpdateFeed(
       null,
     );
 
-    const direction = directionRef ? parseInt(directionRef, 10) : 0;
+    const direction = directionRef ? parseInt(directionRef, 10) - 1 : 0;
 
     // Get active services, and cache them
     const tripStartDate = tripStart.format('YYYYMMDD');
