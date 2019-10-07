@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import Boom from 'boom';
+import { Boom, notFound, boomify } from '@hapi/boom';
 import winstonInstance from './config/winston';
 import config from './config/config';
 import { StatusController } from './controllers/status';
@@ -26,13 +26,13 @@ class App {
   public errorHandlers() {
     // catch 404 and forward to error handler
     this.express.use((req, res, next) => {
-      return next(Boom.notFound('API not found'));
+      return next(notFound('API not found'));
     });
 
     // error handler
     this.express.use(
       (err: Boom, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        const convertedError = err.isBoom ? err : Boom.boomify(err);
+        const convertedError = err.isBoom ? err : boomify(err);
 
         winstonInstance.error('Error', convertedError.message, convertedError.output);
 
