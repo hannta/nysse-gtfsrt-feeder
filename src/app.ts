@@ -4,7 +4,7 @@ import { Boom, notFound, boomify } from '@hapi/boom';
 import winstonInstance from './config/winston';
 import config from './config/config';
 import { StatusController } from './controllers/status';
-import { startDataProviders } from './providers';
+import { startDataProviders } from './providers/tripUpdates';
 
 class App {
   public express: express.Application;

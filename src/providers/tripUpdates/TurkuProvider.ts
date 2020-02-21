@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import config from '../config/config';
-import { storeTripUpdateFeed } from '../lib/turkuSiriFeedProcessor';
-import { DataProvider } from '../providers';
+import config from '../../config/config';
+import { storeTripUpdateFeed } from '../../lib/turkuSiriFeedProcessor';
+import { DataProvider } from '.';
 
 /**
  * Turku SIRI provider

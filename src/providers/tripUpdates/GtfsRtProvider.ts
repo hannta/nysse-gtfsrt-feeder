@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import config from '../config/config';
-import { GtfsRTFeedProcessorSettings, GtfsRTFeedProcessor } from '../lib/GtfsRTFeedProcessor';
-import { DataProvider } from '../providers';
+import config from '../../config/config';
+import { GtfsRTFeedProcessorSettings, GtfsRTFeedProcessor } from '../../lib/GtfsRTFeedProcessor';
+import { DataProvider } from '.';
 
 /**
  * GTFS-RT data provider

@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { statusDataMap } from '../providers';
+import { statusDataMap } from '../providers/tripUpdates';
 
 /**
  * Simple status controller for checking the data provider last status

@@ -1,7 +1,7 @@
 import moment from 'moment';
-import winstonInstance from '../config/winston';
-import { TampereProvider } from '../providers/tampere';
-import { TurkuProvider } from '../providers/turku';
+import winstonInstance from '../../config/winston';
+import { TampereProvider } from './TampereProvider';
+import { TurkuProvider } from './TurkuProvider';
 import { GtfsRtProvider } from './GtfsRtProvider';
 
 export interface DataProvider {
