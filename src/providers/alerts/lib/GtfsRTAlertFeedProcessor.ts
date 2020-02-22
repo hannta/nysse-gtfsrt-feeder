@@ -56,7 +56,7 @@ export class GtfsRTAlertFeedProcessor {
 
       alertInformedEntities.push(
         ...alert.informedEntity
-          .filter(e => !e.agencyId && !e.routeId && !e.stopId && e.trip?.tripId)
+          .filter(e => !(!e.agencyId && !e.routeId && !e.stopId && e.trip?.tripId))
           .map(informEntity => {
             return {
               alert_id: alertId,
