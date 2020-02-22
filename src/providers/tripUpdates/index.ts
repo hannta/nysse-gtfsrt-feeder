@@ -62,7 +62,7 @@ const dataProviders: DataProvider[] = [
 
 export const statusDataMap = new Map<string, DataProviderStatus>();
 
-export async function startDataProviders() {
+export async function startTripUpdatesDataProviders() {
   for (const dataProvider of dataProviders) {
     winstonInstance.info(`Starting data provider ${dataProvider.regionKey}`);
 
