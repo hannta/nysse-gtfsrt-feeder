@@ -1,7 +1,7 @@
 import moment from 'moment';
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
 import winstonInstance from '../../../config/winston';
-import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from '../../../lib/databaseUpdater';
+import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from './tripUpdateDatabaseUpdater';
 import {
   getActiveServiceIds,
   getTripId,

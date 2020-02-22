@@ -1,5 +1,6 @@
 import moment from 'moment';
-import { knex } from '../config/database';
+import { knex } from '../../../config/database';
+import { insertOrUpdate } from '../../../lib/databaseUtils';
 
 const TRIP_UPDATES_TABLE = 'trip_updates';
 const TRIP_UPDATE_STOP_TIME_UPDATES_TABLE = 'trip_update_stop_time_updates';
@@ -56,24 +57,6 @@ export async function updateDatabase(
   }
 
   await deleteOldData(tripUpdatesTable, keepOldRecords);
-}
-
-/**
- * Insert or update data
- * @param tableName
- * @param data
- */
-async function insertOrUpdate(tableName: string, data: TripUpdateDB[] | StopTimeUpdateDB[]) {
-  const firstData = data[0] ? data[0] : data;
-  return knex.raw(
-    knex(tableName)
-      .insert(data)
-      .toQuery() +
-      ' ON DUPLICATE KEY UPDATE ' +
-      Object.getOwnPropertyNames(firstData)
-        .map(field => `${field}=VALUES(${field})`)
-        .join(', '),
-  );
 }
 
 /**

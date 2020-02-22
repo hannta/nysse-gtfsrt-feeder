@@ -1,6 +1,6 @@
 import moment from 'moment';
 import lodash from 'lodash';
-import { updateDatabase, TripUpdateDB, StopTimeUpdateDB } from '../../../lib/databaseUpdater';
+import { updateDatabase, TripUpdateDB, StopTimeUpdateDB } from './tripUpdateDatabaseUpdater';
 import {
   getRouteIdMappings,
   getTripId,
