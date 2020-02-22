@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from '../../config/config';
-import { storeTripUpdateFeed } from '../../lib/turkuSiriFeedProcessor';
+import { storeTripUpdateFeed } from './lib/turkuSiriFeedProcessor';
 import { DataProvider } from '.';
 
 /**

@@ -1,13 +1,13 @@
 import moment from 'moment';
 import lodash from 'lodash';
-import { updateDatabase, TripUpdateDB, StopTimeUpdateDB } from './databaseUpdater';
+import { updateDatabase, TripUpdateDB, StopTimeUpdateDB } from '../../../lib/databaseUpdater';
 import {
   getRouteIdMappings,
   getTripId,
   getTripStops,
   TripStop,
   getActiveServiceIds,
-} from './gtfsUtil';
+} from '../../../lib/gtfsUtil';
 
 interface TurkuSiriData {
   sys: string;
