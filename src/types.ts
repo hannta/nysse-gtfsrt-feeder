@@ -63,8 +63,8 @@ export interface Timestamp {
 export interface Alert {
   activePeriod?: TimeRange[];
   informedEntity: EntitySelector[];
-  cause?: Cause;
-  effect?: Effect;
+  cause?: number; // Cause enum number value
+  effect?: number; // Effect enum number value
   url?: TranslatedString;
   headerText: TranslatedString;
   descriptionText: TranslatedString;
@@ -93,28 +93,55 @@ export interface Translation {
 }
 
 export enum Cause {
-  UNKNOWN_CAUSE,
-  OTHER_CAUSE,
-  TECHNICAL_PROBLEM,
-  STRIKE,
-  DEMONSTRATION,
-  ACCIDENT,
-  HOLIDAY,
-  WEATHER,
-  MAINTENANCE,
-  CONSTRUCTION,
-  POLICE_ACTIVITY,
-  MEDICAL_EMERGENCY,
+  UNKNOWN_CAUSE = 'UNKNOWN_CAUSE',
+  OTHER_CAUSE = 'OTHER_CAUSE',
+  TECHNICAL_PROBLEM = 'TECHNICAL_PROBLEM',
+  STRIKE = 'TECHNICAL_PROBLEM',
+  DEMONSTRATION = 'DEMONSTRATION',
+  ACCIDENT = 'ACCIDENT',
+  HOLIDAY = 'HOLIDAY',
+  WEATHER = 'WEATHER',
+  MAINTENANCE = 'MAINTENANCE',
+  CONSTRUCTION = 'CONSTRUCTION',
+  POLICE_ACTIVITY = 'POLICE_ACTIVITY',
+  MEDICAL_EMERGENCY = 'MEDICAL_EMERGENCY',
 }
 
 export enum Effect {
-  NO_SERVICE,
-  REDUCED_SERVICE,
-  SIGNIFICANT_DELAYS,
-  DETOUR,
-  ADDITIONAL_SERVICE,
-  MODIFIED_SERVICE,
-  OTHER_EFFECT,
-  UNKNOWN_EFFECT,
-  STOP_MOVED,
+  NO_SERVICE = 'NO_SERVICE',
+  REDUCED_SERVICE = 'REDUCED_SERVICE',
+  SIGNIFICANT_DELAYS = 'SIGNIFICANT_DELAYS',
+  DETOUR = 'DETOUR',
+  ADDITIONAL_SERVICE = 'ADDITIONAL_SERVICE',
+  MODIFIED_SERVICE = 'MODIFIED_SERVICE',
+  OTHER_EFFECT = 'OTHER_EFFECT',
+  UNKNOWN_EFFECT = 'UNKNOWN_EFFECT',
+  STOP_MOVED = 'STOP_MOVED',
+}
+
+/**
+ * Database types
+ */
+
+export interface AlertDB {
+  id: string;
+  start_time?: number;
+  end_time?: number;
+  cause?: string;
+  effect?: string;
+}
+
+export interface InformedEntityDB {
+  alert_id: string;
+  agency_id?: string;
+  route_id?: string;
+  route_type?: number;
+  stop_id?: string;
+  trip_id?: string;
+}
+
+export interface TranslatedTextDB {
+  alert_id: string;
+  translated_text: string;
+  language_code?: string;
 }
