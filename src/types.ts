@@ -61,13 +61,13 @@ export interface Timestamp {
 }
 
 export interface Alert {
-  active_period?: TimeRange[];
-  informed_entity: EntitySelector;
+  activePeriod?: TimeRange[];
+  informedEntity: EntitySelector[];
   cause?: Cause;
   effect?: Effect;
   url?: TranslatedString;
-  header_text: TranslatedString;
-  description_text: TranslatedString;
+  headerText: TranslatedString;
+  descriptionText: TranslatedString;
 }
 
 export interface TimeRange {
@@ -76,11 +76,11 @@ export interface TimeRange {
 }
 
 export interface EntitySelector {
-  agency_id?: string;
-  route_id?: string;
-  route_type?: number;
+  agencyId?: string;
+  routeId?: string;
+  routeType?: number;
   trip?: TripDescriptor;
-  stop_id?: string;
+  stopId?: string;
 }
 
 export interface TranslatedString {
