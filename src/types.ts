@@ -145,3 +145,12 @@ export interface TranslatedTextDB {
   translated_text: string;
   language_code?: string;
 }
+
+/**
+ * Other types
+ */
+
+export interface DataProviderStatus {
+  updated: string;
+  lastTripUpdateCount: number;
+}

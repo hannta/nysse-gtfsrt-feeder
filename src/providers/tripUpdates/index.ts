@@ -3,16 +3,12 @@ import winstonInstance from '../../config/winston';
 import { TampereProvider } from './TampereProvider';
 import { TurkuProvider } from './TurkuProvider';
 import { GtfsRtProvider } from './GtfsRtProvider';
+import { DataProviderStatus } from '../../types';
 
 export interface DataProvider {
   regionKey: string;
   updateInterval: number;
   getTripUpdates: () => Promise<number>;
-}
-
-export interface DataProviderStatus {
-  updated: string;
-  lastTripUpdateCount: number;
 }
 
 // Active data providers
