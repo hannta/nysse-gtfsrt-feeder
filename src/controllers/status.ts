@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { statusDataMap } from '../providers/tripUpdates';
+import { tripUpdateStatusDataMap } from '../providers/tripUpdates';
+import { alertsStatusDataMap } from '../providers/alerts';
 
 /**
  * Simple status controller for checking the data provider last status
@@ -14,8 +15,11 @@ export class StatusController {
 
   public async getStatus(req: Request, res: Response, next: NextFunction) {
     res.json({
-      providers: Array.from(statusDataMap.keys()).map(key => {
-        return { [key]: statusDataMap.get(key) };
+      tripUpdates: Array.from(tripUpdateStatusDataMap.keys()).map(key => {
+        return { [key]: tripUpdateStatusDataMap.get(key) };
+      }),
+      alerts: Array.from(alertsStatusDataMap.keys()).map(key => {
+        return { [key]: tripUpdateStatusDataMap.get(key) };
       }),
     });
   }

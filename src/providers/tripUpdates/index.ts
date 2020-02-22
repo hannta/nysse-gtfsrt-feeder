@@ -56,7 +56,7 @@ const dataProviders: DataProvider[] = [
   */
 ];
 
-export const statusDataMap = new Map<string, DataProviderStatus>();
+export const tripUpdateStatusDataMap = new Map<string, DataProviderStatus>();
 
 export async function startTripUpdatesDataProviders() {
   for (const dataProvider of dataProviders) {
@@ -65,9 +65,9 @@ export async function startTripUpdatesDataProviders() {
     const getData = async () => {
       try {
         const tripUpdateCount = await dataProvider.getTripUpdates();
-        statusDataMap.set(dataProvider.regionKey, {
-          updated: moment().format(),
-          lastTripUpdateCount: tripUpdateCount,
+        tripUpdateStatusDataMap.set(dataProvider.regionKey, {
+          updated: new Date(),
+          newItemCount: tripUpdateCount,
         });
       } catch (error) {
         winstonInstance.error(`Data provider ${dataProvider.regionKey} error`, {

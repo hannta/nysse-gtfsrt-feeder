@@ -151,6 +151,6 @@ export interface TranslatedTextDB {
  */
 
 export interface DataProviderStatus {
-  updated: string;
-  lastTripUpdateCount: number;
+  updated: Date;
+  newItemCount: number;
 }
