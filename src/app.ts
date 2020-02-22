@@ -5,6 +5,7 @@ import winstonInstance from './config/winston';
 import config from './config/config';
 import { StatusController } from './controllers/status';
 import { startTripUpdatesDataProviders } from './providers/tripUpdates';
+import { startAlertDataProviders } from './providers/alerts';
 
 class App {
   public express: express.Application;
@@ -16,6 +17,7 @@ class App {
     this.errorHandlers();
 
     startTripUpdatesDataProviders();
+    startAlertDataProviders();
   }
 
   public middleware() {
