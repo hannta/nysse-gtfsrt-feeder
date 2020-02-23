@@ -13,7 +13,36 @@ const alertDataProviders: AlertDataProvider[] = [
     'tampere',
     process.env.TAMPERE_WALTTI_API_GTFSRT_SERVICE_ALERTS_URL!!,
     parseInt(process.env.TAMPERE_WALTTI_API_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
-    { Authorization: process.env.TAMPERE_WALTTI_API_GTFSRT_AUTH!! },
+    { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
+  ),
+  new GtfsRtAlertProvider(
+    'lahti',
+    process.env.LAHTI_WALTTI_API_GTFSRT_SERVICE_ALERTS_URL!!,
+    parseInt(process.env.LAHTI_WALTTI_API_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
+    { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
+  ),
+  new GtfsRtAlertProvider(
+    'joensuu',
+    process.env.JOENSUU_WALTTI_API_GTFSRT_SERVICE_ALERTS_URL!!,
+    parseInt(process.env.JOENSUU_WALTTI_API_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
+    { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
+  ),
+  new GtfsRtAlertProvider(
+    'jyvaskyla',
+    process.env.JYVASKYLA_WALTTI_API_GTFSRT_SERVICE_ALERTS_URL!!,
+    parseInt(process.env.JYVASKYLA_WALTTI_API_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
+    { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
+  ),
+  new GtfsRtAlertProvider(
+    'oulu',
+    process.env.OULU_GTFSRT_SERVICE_ALERTS_URL!!,
+    parseInt(process.env.OULU_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
+  ),
+  new GtfsRtAlertProvider(
+    'kuopio',
+    process.env.KUOPIO_GTFSRT_SERVICE_ALERTS_URL!!,
+    parseInt(process.env.KUOPIO_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
+    { Authorization: process.env.KUOPIO_GTFSRT_SERVICE_AUTH_HEADER!! },
   ),
 ];
 
