@@ -1,13 +1,13 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from '../../config/config';
 import { GtfsRTFeedProcessorSettings, GtfsRTFeedProcessor } from './lib/GtfsRTFeedProcessor';
-import { DataProvider } from '.';
+import { TripUpdatesDataProvider } from '.';
 
 /**
  * GTFS-RT data provider
  * Fetches data from GTFS-RT data source and stores it to database
  */
-export class GtfsRtProvider implements DataProvider {
+export class GtfsRtTripUpdateProvider implements TripUpdatesDataProvider {
   public readonly regionKey: string;
 
   public readonly updateInterval: number;

@@ -44,6 +44,7 @@ export class GtfsRTFeedProcessor {
     const feedData: FeedMessage = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(
       feedBinary,
     );
+
     if (!feedData || !feedData.entity) {
       // There should be at least empty entity(?)
       throw new Error('No feed data');

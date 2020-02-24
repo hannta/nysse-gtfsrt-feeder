@@ -1,49 +1,49 @@
 import winstonInstance from '../../config/winston';
 import { TampereProvider } from './TampereProvider';
 import { TurkuProvider } from './TurkuProvider';
-import { GtfsRtProvider } from './GtfsRtProvider';
+import { GtfsRtTripUpdateProvider } from './GtfsRtTripUpdateProvider';
 import { DataProviderStatus } from '../../types';
 
-export interface DataProvider {
+export interface TripUpdatesDataProvider {
   regionKey: string;
   updateInterval: number;
   getTripUpdates: () => Promise<number>;
 }
 
 // Active data providers
-const dataProviders: DataProvider[] = [
+const dataProviders: TripUpdatesDataProvider[] = [
   new TampereProvider(),
   new TurkuProvider(),
-  new GtfsRtProvider(
+  new GtfsRtTripUpdateProvider(
     'oulu',
     process.env.OULU_GTFSRT_TRIP_UPDATES_URL!,
     parseInt(process.env.OULU_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
   ),
-  new GtfsRtProvider(
+  new GtfsRtTripUpdateProvider(
     'kuopio',
     process.env.KUOPIO_GTFSRT_TRIP_UPDATES_URL!,
     parseInt(process.env.KUOPIO_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
     { Authorization: process.env.KUOPIO_GTFSRT_SERVICE_AUTH_HEADER!! },
   ),
-  new GtfsRtProvider(
+  new GtfsRtTripUpdateProvider(
     'lahti',
     process.env.LAHTI_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
     parseInt(process.env.LAHTI_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
     { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
-  new GtfsRtProvider(
+  new GtfsRtTripUpdateProvider(
     'joensuu',
     process.env.JOENSUU_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
     parseInt(process.env.JOENSUU_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
     { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
-  new GtfsRtProvider(
+  new GtfsRtTripUpdateProvider(
     'jyvaskyla',
     process.env.JYVASKYLA_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
     parseInt(process.env.JYVASKYLA_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
     { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
-  new GtfsRtProvider(
+  new GtfsRtTripUpdateProvider(
     'tampere',
     process.env.TAMPERE_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
     parseInt(process.env.TAMPERE_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
