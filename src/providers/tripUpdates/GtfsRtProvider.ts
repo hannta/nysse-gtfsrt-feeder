@@ -14,17 +14,21 @@ export class GtfsRtProvider implements DataProvider {
 
   private readonly gtfsRTFeedUrl: string;
 
+  private readonly requestHeaders?: { [k: string]: string };
+
   private readonly gtfsRTFeedProcessor: GtfsRTFeedProcessor;
 
   constructor(
     regionKey: string,
     gtfsRTFeedUrl: string,
     updateInterval: number,
+    requestHeaders?: { [k: string]: string },
     gtfsRTFeedProcessorSettings?: GtfsRTFeedProcessorSettings,
   ) {
     this.regionKey = regionKey;
     this.gtfsRTFeedUrl = gtfsRTFeedUrl;
     this.updateInterval = updateInterval;
+    this.requestHeaders = requestHeaders;
     this.gtfsRTFeedProcessor = new GtfsRTFeedProcessor(regionKey, gtfsRTFeedProcessorSettings);
   }
 
@@ -35,6 +39,7 @@ export class GtfsRtProvider implements DataProvider {
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,
+        ...this.requestHeaders,
       },
       timeout: 5000,
     };
