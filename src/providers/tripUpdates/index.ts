@@ -14,45 +14,41 @@ export interface DataProvider {
 const dataProviders: DataProvider[] = [
   new TampereProvider(),
   new TurkuProvider(),
-  /*
-  new GtfsRtProvider(
-    'helsinki',
-    process.env.HELSINKI_UPDATES_URL!,
-    parseInt(process.env.HELSINKI_UPDATE_INTERVAL!, 10),
-  ),
-  */
   new GtfsRtProvider(
     'oulu',
     process.env.OULU_GTFSRT_TRIP_UPDATES_URL!,
-    parseInt(process.env.OULU_UPDATE_INTERVAL!, 10),
+    parseInt(process.env.OULU_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
   ),
   new GtfsRtProvider(
     'kuopio',
-    process.env.KUOPIO_UPDATES_URL!,
-    parseInt(process.env.KUOPIO_UPDATE_INTERVAL!, 10),
+    process.env.KUOPIO_GTFSRT_TRIP_UPDATES_URL!,
+    parseInt(process.env.KUOPIO_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
+    { Authorization: process.env.KUOPIO_GTFSRT_SERVICE_AUTH_HEADER!! },
   ),
-  /*
-    new GtfsRtProvider(
+  new GtfsRtProvider(
     'lahti',
-    process.env.LAHTI_GTFSRT_TRIP_UPDATES_URL!,
-    parseInt(process.env.LAHTI_UPDATE_INTERVAL!, 10),
+    process.env.LAHTI_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
+    parseInt(process.env.LAHTI_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
+    { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
   new GtfsRtProvider(
     'joensuu',
-    process.env.JOENSUU_UPDATES_URL!,
-    parseInt(process.env.JOENSUU_UPDATE_INTERVAL!, 10),
+    process.env.JOENSUU_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
+    parseInt(process.env.JOENSUU_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
+    { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
   new GtfsRtProvider(
     'jyvaskyla',
-    process.env.JYVASKYLA_UPDATES_URL!,
-    parseInt(process.env.JYVASKYLA_UPDATE_INTERVAL!, 10),
+    process.env.JYVASKYLA_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
+    parseInt(process.env.JYVASKYLA_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
+    { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
   new GtfsRtProvider(
-    'lappeenranta',
-    process.env.LAPPEENRANTA_UPDATES_URL!,
-    parseInt(process.env.LAPPEENRANTA_UPDATE_INTERVAL!, 10),
+    'tampere',
+    process.env.TAMPERE_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
+    parseInt(process.env.TAMPERE_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
+    { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
-  */
 ];
 
 export const tripUpdateStatusDataMap = new Map<string, DataProviderStatus>();
