@@ -50,7 +50,7 @@ export class GtfsRTAlertFeedProcessor {
 
       alertsDB.push({
         id: alertId,
-        start_time: alert.activePeriod?.[0].start.low,
+        start_time: alert.activePeriod?.[0].start.low, // TODO Now we support only one active period
         end_time: alert.activePeriod?.[0].end.low,
         cause: this.convertCause(alert.cause),
         effect: this.convertEffect(alert.effect),
