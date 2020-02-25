@@ -60,11 +60,11 @@ export class GtfsRTAlertFeedProcessor {
           .map(informEntity => {
             return {
               alert_id: alertId,
-              agency_id: informEntity.agencyId,
-              route_id: informEntity.routeId,
-              route_type: informEntity.routeType,
-              stop_id: informEntity.stopId,
-              trip_id: informEntity.trip?.tripId,
+              agency_id: informEntity.agencyId || undefined,
+              route_id: informEntity.routeId || undefined,
+              route_type: informEntity.routeType || undefined,
+              stop_id: informEntity.stopId || undefined,
+              trip_id: informEntity.trip?.tripId || undefined,
             };
           }),
       );
@@ -104,7 +104,7 @@ export class GtfsRTAlertFeedProcessor {
     return {
       alert_id: alertId,
       translated_text: translation.text,
-      language_code: translation.language,
+      language_code: translation.language || undefined,
     };
   }
 
