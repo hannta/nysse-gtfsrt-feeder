@@ -55,7 +55,7 @@ export const tripUpdateStatusDataMap = new Map<string, DataProviderStatus>();
 
 export async function startTripUpdatesDataProviders() {
   for (const dataProvider of dataProviders) {
-    winstonInstance.info(`Starting data provider ${dataProvider.regionKey}`);
+    winstonInstance.info(`Starting trip update data provider ${dataProvider.regionKey}`);
 
     const getData = async () => {
       try {
