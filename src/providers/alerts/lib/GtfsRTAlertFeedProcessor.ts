@@ -9,7 +9,7 @@ import {
   Cause,
   Effect,
 } from '../../../types';
-import { updateAlertsDatabase } from './alertDatabaseUpdater';
+import { updateAlertsDatabase, deleteAlerts } from './alertDatabaseUpdater';
 
 export class GtfsRTAlertFeedProcessor {
   private readonly regionKey: string;
@@ -23,8 +23,10 @@ export class GtfsRTAlertFeedProcessor {
       feedBinary,
     );
 
-    if (!feedData || !feedData.entity) {
-      throw new Error('No alert feed data');
+    if (!feedData.entity || feedData.entity.length < 1) {
+      // If no data, delete all alerts
+      deleteAlerts(this.regionKey);
+      return;
     }
 
     const alertsDB: AlertDB[] = [];

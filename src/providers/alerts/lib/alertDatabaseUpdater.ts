@@ -33,3 +33,8 @@ export async function updateAlertsDatabase(
   const alertUrlsTable = `${regionKey}_${ALERT_URLS_TABLE}`;
   await insertOrUpdate(alertUrlsTable, alertUrls);
 }
+
+export async function deleteAlerts(regionKey: string) {
+  const alertsTable = `${regionKey}_${ALERTS_TABLE}`;
+  return emptyTable(alertsTable);
+}
