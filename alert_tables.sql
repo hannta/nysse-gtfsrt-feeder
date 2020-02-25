@@ -36,9 +36,9 @@ CREATE TABLE <regionName>_alert_informed_entities (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 ALTER TABLE <regionName>_alert_informed_entities
-  ADD PRIMARY KEY (alert_id,agency_id,route_id,stop_id,trip_id),
   ADD KEY alert_id (alert_id),
-  ADD CONSTRAINT <regionName>_alert_informed_entities_key FOREIGN KEY (alert_id) REFERENCES <regionName>_alerts (id) ON DELETE CASCADE;
+  ADD CONSTRAINT <regionName>_alert_informed_entities_unique UNIQUE (alert_id,agency_id,route_id,route_type,stop_id,trip_id),
+  ADD CONSTRAINT <regionName>_alert_informed_entities_fk FOREIGN KEY (alert_id) REFERENCES <regionName>_alerts (id) ON DELETE CASCADE;
   
 --
 -- alert_header_texts
@@ -50,9 +50,9 @@ CREATE TABLE <regionName>_alert_header_texts (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 ALTER TABLE <regionName>_alert_header_texts
-  ADD PRIMARY KEY (alert_id,language_code),
   ADD KEY alert_id (alert_id),
-  ADD CONSTRAINT <regionName>_alert_header_texts_key FOREIGN KEY (alert_id) REFERENCES <regionName>_alerts (id) ON DELETE CASCADE;
+  ADD CONSTRAINT <regionName>_alert_header_texts_unique UNIQUE (alert_id,language_code),
+  ADD CONSTRAINT <regionName>_alert_header_texts_fk FOREIGN KEY (alert_id) REFERENCES <regionName>_alerts (id) ON DELETE CASCADE;
 
 --
 -- alert_description_texts
@@ -64,9 +64,9 @@ CREATE TABLE <regionName>_alert_description_texts (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 ALTER TABLE <regionName>_alert_description_texts
-  ADD PRIMARY KEY (alert_id,language_code),
   ADD KEY alert_id (alert_id),
-  ADD CONSTRAINT <regionName>_alert_description_texts_key FOREIGN KEY (alert_id) REFERENCES <regionName>_alerts (id) ON DELETE CASCADE;
+  ADD CONSTRAINT <regionName>_alert_description_texts_unique UNIQUE (alert_id,language_code),
+  ADD CONSTRAINT <regionName>_alert_description_texts_fk FOREIGN KEY (alert_id) REFERENCES <regionName>_alerts (id) ON DELETE CASCADE;
 
 --
 -- alert_urls
@@ -78,6 +78,6 @@ CREATE TABLE <regionName>_alert_urls (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 ALTER TABLE <regionName>_alert_urls
-  ADD PRIMARY KEY (alert_id,language_code),
   ADD KEY alert_id (alert_id),
-  ADD CONSTRAINT <regionName>_alert_urls_key FOREIGN KEY (alert_id) REFERENCES <regionName>_alerts (id) ON DELETE CASCADE;
+  ADD CONSTRAINT <regionName>_alert_urls_unique UNIQUE (alert_id,language_code),
+  ADD CONSTRAINT <regionName>_alert_urls_fk FOREIGN KEY (alert_id) REFERENCES <regionName>_alerts (id) ON DELETE CASCADE;
