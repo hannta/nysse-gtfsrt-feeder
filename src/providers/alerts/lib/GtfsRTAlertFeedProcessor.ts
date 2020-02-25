@@ -26,7 +26,7 @@ export class GtfsRTAlertFeedProcessor {
     if (!feedData.entity || feedData.entity.length < 1) {
       // If no data, delete all alerts
       deleteAlerts(this.regionKey);
-      return;
+      return 0;
     }
 
     const alertsDB: AlertDB[] = [];
