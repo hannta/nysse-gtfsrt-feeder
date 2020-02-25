@@ -43,12 +43,14 @@ const dataProviders: TripUpdatesDataProvider[] = [
     parseInt(process.env.JYVASKYLA_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
     { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
+  /*
   new GtfsRtTripUpdateProvider(
     'tampere',
     process.env.TAMPERE_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
     parseInt(process.env.TAMPERE_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
     { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
+  */
 ];
 
 export const tripUpdateStatusDataMap = new Map<string, DataProviderStatus>();
