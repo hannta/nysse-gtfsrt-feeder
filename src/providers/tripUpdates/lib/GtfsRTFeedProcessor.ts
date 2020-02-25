@@ -1,14 +1,15 @@
 import moment from 'moment';
 import GtfsRealtimeBindings from 'gtfs-realtime-bindings';
-import winstonInstance from '../config/winston';
-import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from './databaseUpdater';
+import winstonInstance from '../../../config/winston';
+import { TripUpdateDB, StopTimeUpdateDB, updateDatabase } from './tripUpdateDatabaseUpdater';
 import {
   getActiveServiceIds,
   getTripId,
   getTripStopTimes,
   StopTime,
   getTripById,
-} from './gtfsUtil';
+} from '../../../lib/gtfsUtil';
+import { FeedMessage, StopTimeUpdate, VehicleDescriptor } from '../../../types';
 
 /**
  * GTFS-RT feed processor config options
@@ -16,67 +17,6 @@ import {
 export interface GtfsRTFeedProcessorSettings {
   /** How old records to keep, seconds  */
   keepOldRecords?: number;
-}
-
-interface FeedMessage {
-  header: FeedHeader;
-  entity?: FeedEntity[];
-}
-
-interface FeedHeader {
-  gtfsRealtimeVersion: string;
-  incrementality: number; // Enum
-  timestamp: Timestamp;
-}
-
-interface FeedEntity {
-  id: string;
-  isDeleted?: boolean;
-  tripUpdate?: TripUpdate;
-}
-
-interface TripUpdate {
-  trip: TripDescriptor;
-  vehicle?: VehicleDescriptor;
-  stopTimeUpdate?: StopTimeUpdate[];
-  timestamp?: Timestamp;
-  delay?: number;
-}
-
-interface TripDescriptor {
-  tripId?: string;
-  routeId?: string;
-  directionId?: number;
-  startTime?: string;
-  startDate?: string;
-  scheduleRelationship?: number; // Enum
-}
-
-interface VehicleDescriptor {
-  id?: string;
-  label?: string;
-  licensePlate?: string;
-}
-
-interface StopTimeUpdate {
-  stopSequence?: number;
-  stopId?: string;
-  arrival?: StopTimeEvent;
-  departure?: StopTimeEvent;
-  scheduleRelationship?: number; // Enum
-}
-
-interface StopTimeEvent {
-  delay?: number;
-  time?: Timestamp;
-  uncertainty?: number;
-}
-
-// int64
-interface Timestamp {
-  low: number;
-  high: number;
-  unsigned: boolean;
 }
 
 /**
@@ -104,6 +44,7 @@ export class GtfsRTFeedProcessor {
     const feedData: FeedMessage = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(
       feedBinary,
     );
+
     if (!feedData || !feedData.entity) {
       // There should be at least empty entity(?)
       throw new Error('No feed data');

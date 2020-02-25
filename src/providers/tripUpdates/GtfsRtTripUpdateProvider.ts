@@ -1,18 +1,20 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import config from '../config/config';
-import { GtfsRTFeedProcessorSettings, GtfsRTFeedProcessor } from '../lib/GtfsRTFeedProcessor';
-import { DataProvider } from '../providers';
+import config from '../../config/config';
+import { GtfsRTFeedProcessorSettings, GtfsRTFeedProcessor } from './lib/GtfsRTFeedProcessor';
+import { TripUpdatesDataProvider } from '.';
 
 /**
  * GTFS-RT data provider
  * Fetches data from GTFS-RT data source and stores it to database
  */
-export class GtfsRtProvider implements DataProvider {
+export class GtfsRtTripUpdateProvider implements TripUpdatesDataProvider {
   public readonly regionKey: string;
 
   public readonly updateInterval: number;
 
   private readonly gtfsRTFeedUrl: string;
+
+  private readonly requestHeaders?: { [k: string]: string };
 
   private readonly gtfsRTFeedProcessor: GtfsRTFeedProcessor;
 
@@ -20,11 +22,13 @@ export class GtfsRtProvider implements DataProvider {
     regionKey: string,
     gtfsRTFeedUrl: string,
     updateInterval: number,
+    requestHeaders?: { [k: string]: string },
     gtfsRTFeedProcessorSettings?: GtfsRTFeedProcessorSettings,
   ) {
     this.regionKey = regionKey;
     this.gtfsRTFeedUrl = gtfsRTFeedUrl;
     this.updateInterval = updateInterval;
+    this.requestHeaders = requestHeaders;
     this.gtfsRTFeedProcessor = new GtfsRTFeedProcessor(regionKey, gtfsRTFeedProcessorSettings);
   }
 
@@ -35,6 +39,7 @@ export class GtfsRtProvider implements DataProvider {
       responseType: 'arraybuffer',
       headers: {
         'User-Agent': config.serverUserAgent,
+        ...this.requestHeaders,
       },
       timeout: 5000,
     };

@@ -1,7 +1,7 @@
 import moment from 'moment';
 import lodash from 'lodash';
-import { updateDatabase, TripUpdateDB, StopTimeUpdateDB } from './databaseUpdater';
-import { getActiveServiceIds, getTripId } from './gtfsUtil';
+import { updateDatabase, TripUpdateDB, StopTimeUpdateDB } from './tripUpdateDatabaseUpdater';
+import { getActiveServiceIds, getTripId } from '../../../lib/gtfsUtil';
 
 interface TampereSiriData {
   status: string;

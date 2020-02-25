@@ -1,13 +1,13 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import config from '../config/config';
-import { storeTripUpdateFeed } from '../lib/tampereJourneysApiFeedProcessor';
-import { DataProvider } from '../providers';
+import config from '../../config/config';
+import { storeTripUpdateFeed } from './lib/tampereJourneysApiFeedProcessor';
+import { TripUpdatesDataProvider } from '.';
 
 /**
  * Tampere Journeys api provider
  * Fetches data from Tampere journeys api and stores it to database
  */
-export class TampereProvider implements DataProvider {
+export class TampereProvider implements TripUpdatesDataProvider {
   public regionKey = 'tampere';
 
   public updateInterval = parseInt(process.env.TAMPERE_UPDATE_INTERVAL!, 10);

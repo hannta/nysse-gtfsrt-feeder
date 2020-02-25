@@ -1,13 +1,13 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import config from '../config/config';
-import { storeTripUpdateFeed } from '../lib/turkuSiriFeedProcessor';
-import { DataProvider } from '../providers';
+import config from '../../config/config';
+import { storeTripUpdateFeed } from './lib/turkuSiriFeedProcessor';
+import { TripUpdatesDataProvider } from '.';
 
 /**
  * Turku SIRI provider
  * Fetches data from Turku SIRI api and stores it to database
  */
-export class TurkuProvider implements DataProvider {
+export class TurkuProvider implements TripUpdatesDataProvider {
   public regionKey = 'turku';
 
   public updateInterval = parseInt(process.env.TURKU_UPDATE_INTERVAL!, 10);
