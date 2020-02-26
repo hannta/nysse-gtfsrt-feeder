@@ -9,13 +9,16 @@ import {
   Cause,
   Effect,
 } from '../../../types';
-import { updateAlertsDatabase, deleteAlerts } from './alertDatabaseUpdater';
+import { AlertDatabaseUpdater } from './alertDatabaseUpdater';
 
 export class GtfsRTAlertFeedProcessor {
   private readonly regionKey: string;
 
+  private readonly databaseUpdater: AlertDatabaseUpdater;
+
   constructor(regionKey: string) {
     this.regionKey = regionKey;
+    this.databaseUpdater = new AlertDatabaseUpdater(regionKey);
   }
 
   public async storeAlertsUpdateFeed(feedBinary: any) {
@@ -25,7 +28,7 @@ export class GtfsRTAlertFeedProcessor {
 
     if (!feedData.entity || feedData.entity.length < 1) {
       // If no data, delete all alerts
-      deleteAlerts(this.regionKey);
+      this.databaseUpdater.deleteAlerts();
       return 0;
     }
 
@@ -90,8 +93,7 @@ export class GtfsRTAlertFeedProcessor {
       }
     }
 
-    await updateAlertsDatabase(
-      this.regionKey,
+    this.databaseUpdater.updateAlertsDatabase(
       alertsDB,
       alertInformedEntities,
       alertHeaderTexts,
