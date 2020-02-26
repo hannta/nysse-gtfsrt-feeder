@@ -44,6 +44,11 @@ const alertDataProviders: AlertDataProvider[] = [
     parseInt(process.env.KUOPIO_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
     { Authorization: process.env.KUOPIO_GTFSRT_SERVICE_AUTH_HEADER!! },
   ),
+  new GtfsRtAlertProvider(
+    'helsinki',
+    process.env.HSL_GTFSRT_SERVICE_ALERTS_URL!!,
+    parseInt(process.env.HSL_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
+  ),
 ];
 
 export const alertsStatusDataMap = new Map<string, DataProviderStatus>();
