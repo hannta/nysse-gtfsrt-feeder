@@ -33,6 +33,7 @@ export class GtfsRtAlertProvider implements AlertDataProvider {
       url: this.gtfsRTFeedUrl,
       responseType: 'arraybuffer',
       headers: {
+        'Cache-Control': 'no-cache',
         'User-Agent': config.serverUserAgent,
         ...this.requestHeaders,
       },
