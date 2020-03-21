@@ -49,6 +49,11 @@ const alertDataProviders: AlertDataProvider[] = [
     process.env.HSL_GTFSRT_SERVICE_ALERTS_URL!!,
     parseInt(process.env.HSL_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
   ),
+  new GtfsRtAlertProvider(
+    'turku',
+    process.env.TURKU_API_GTFSRT_URL!!,
+    parseInt(process.env.TURKU_API_GTFSRT_SERVICE_ALERTS_POLLING_INTERVAL!!, 10),
+  ),
 ];
 
 export const alertsStatusDataMap = new Map<string, DataProviderStatus>();
