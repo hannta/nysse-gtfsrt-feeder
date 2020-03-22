@@ -41,6 +41,11 @@ export class GtfsRTAlertFeedProcessor {
     for (const entity of feedData.entity) {
       const alert = entity.alert;
 
+      if (!alert) {
+        // This entity does not have alert
+        continue;
+      }
+
       if (!entity.id || !alert?.headerText || !alert.descriptionText) {
         winstonInstance.info('Empty service alert entity, skipping.', {
           regionKey: this.regionKey,
