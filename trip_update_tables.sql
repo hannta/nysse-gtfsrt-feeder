@@ -16,7 +16,7 @@ CREATE TABLE <regionName>_trip_updates (
   direction_id tinyint(4) DEFAULT NULL,
   trip_start_time varchar(10) DEFAULT NULL,
   trip_start_date varchar(10) DEFAULT NULL,
-  schedule_relationship varchar(10) DEFAULT NULL,
+  schedule_relationship varchar(20) DEFAULT NULL,
   vehicle_id varchar(10) DEFAULT NULL,
   vehicle_label varchar(15) DEFAULT NULL,
   vehicle_license_plate varchar(10) DEFAULT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE <regionName>_trip_update_stop_time_updates (
   departure_delay int DEFAULT NULL,
   departure_time int DEFAULT NULL,
   departure_uncertainty int DEFAULT NULL,
-  schedule_relationship int DEFAULT NULL
+  schedule_relationship varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 ALTER TABLE <regionName>_trip_update_stop_time_updates

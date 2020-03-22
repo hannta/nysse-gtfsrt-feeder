@@ -1,6 +1,9 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from '../../config/config';
-import { GtfsRTFeedProcessorSettings, GtfsRTFeedProcessor } from './lib/GtfsRTFeedProcessor';
+import {
+  GtfsRTFeedProcessorSettings,
+  GtfsRTFeedProcessor,
+} from './lib/GtfsRTTripUpdateFeedProcessor';
 import { TripUpdatesDataProvider } from '.';
 
 /**
@@ -42,7 +45,7 @@ export class GtfsRtTripUpdateProvider implements TripUpdatesDataProvider {
         'User-Agent': config.serverUserAgent,
         ...this.requestHeaders,
       },
-      timeout: 5000,
+      timeout: 10000,
     };
 
     const resp = await axios.request(requestConfig);
