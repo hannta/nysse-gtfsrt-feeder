@@ -1,6 +1,9 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from '../../config/config';
-import { GtfsRTFeedProcessorSettings, GtfsRTFeedProcessor } from './lib/GtfsRTFeedProcessor';
+import {
+  GtfsRTFeedProcessorSettings,
+  GtfsRTFeedProcessor,
+} from './lib/GtfsRTTripUpdateFeedProcessor';
 import { TripUpdatesDataProvider } from '.';
 
 /**
