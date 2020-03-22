@@ -132,7 +132,7 @@ export async function storeTripUpdateFeed(
       direction_id: direction,
       trip_start_time: tripStart.format('HH:mm:ss'),
       trip_start_date: tripStart.format('YYYYMMDD'),
-      schedule_relationship: undefined,
+      schedule_relationship: 'SCHEDULED',
       vehicle_id: lodash.get(serviceDelivery, 'monitoredVehicleJourney.vehicleRef', undefined),
       vehicle_label: undefined,
       vehicle_license_plate: undefined,
@@ -168,5 +168,6 @@ function createStopTimeUpdate(
     stop_id: stopRefUrl ? stopRefUrl.substr(stopRefUrl.lastIndexOf('/') + 1) : undefined,
     arrival_time: expectedArrival ? moment(expectedArrival).unix() : undefined,
     departure_time: expectedDeparture ? moment(expectedDeparture).unix() : undefined,
+    schedule_relationship: 'SCHEDULED',
   };
 }

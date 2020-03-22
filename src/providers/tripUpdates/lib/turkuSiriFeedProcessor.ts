@@ -144,7 +144,7 @@ export async function storeTripUpdateFeed(
         direction_id: direction,
         trip_start_date: moment(tripStart).format('YYYYMMDD'),
         trip_start_time: moment(tripStart).format('HH:mm:ss'),
-        schedule_relationship: undefined,
+        schedule_relationship: 'SCHEDULED',
         vehicle_id: vehicle.vehicleref,
         vehicle_label: undefined,
         vehicle_license_plate: undefined,
@@ -157,6 +157,7 @@ export async function storeTripUpdateFeed(
         stop_id: vehicle.next_stoppointref,
         arrival_time: vehicle.next_expectedarrivaltime,
         departure_time: vehicle.next_expecteddeparturetime,
+        schedule_relationship: 'SCHEDULED',
       };
       tripUpdateStopTimeUpdates.push(nextStopTimeUpdate);
 
@@ -169,6 +170,7 @@ export async function storeTripUpdateFeed(
             stop_id: call.stoppointref,
             arrival_time: call.expectedarrivaltime,
             departure_time: call.expecteddeparturetime,
+            schedule_relationship: 'SCHEDULED',
           };
           tripUpdateStopTimeUpdates.push(stopTimeUpdate);
         }
