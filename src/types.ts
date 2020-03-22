@@ -30,7 +30,7 @@ export interface TripDescriptor {
   directionId?: number;
   startTime?: string;
   startDate?: string;
-  scheduleRelationship?: number; // Enum
+  scheduleRelationship?: number; // enum number value
 }
 
 export interface VehicleDescriptor {
@@ -44,7 +44,7 @@ export interface StopTimeUpdate {
   stopId?: string;
   arrival?: StopTimeEvent;
   departure?: StopTimeEvent;
-  scheduleRelationship?: number; // Enum
+  scheduleRelationship?: number; // enum number value
 }
 
 export interface StopTimeEvent {
@@ -90,6 +90,16 @@ export interface TranslatedString {
 export interface Translation {
   text: string;
   language?: string;
+}
+
+export enum ScheduleRelationship {
+  SCHEDULED = 'SCHEDULED',
+  ADDED = 'ADDED', // Only with trip
+  UNSCHEDULED = 'UNSCHEDULED', // Only with trip
+  CANCELED = 'CANCELED', // Only with trip
+  SKIPPED = 'SKIPPED', // Only wit stop time
+  NO_DATA = 'NO_DATA', // Only with stop time
+  REPLACEMENT = 'REPLACEMENT', // Only with trip
 }
 
 export enum Cause {
