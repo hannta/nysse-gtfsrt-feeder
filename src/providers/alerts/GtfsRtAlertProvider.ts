@@ -37,7 +37,7 @@ export class GtfsRtAlertProvider implements AlertDataProvider {
         'User-Agent': config.serverUserAgent,
         ...this.requestHeaders,
       },
-      timeout: 5000,
+      timeout: 10000,
     };
 
     const resp = await Axios.request(requestConfig);
