@@ -13,7 +13,7 @@ export interface TripUpdateDB {
   direction_id?: number;
   trip_start_time?: string;
   trip_start_date?: string;
-  schedule_relationship?: number;
+  schedule_relationship: string;
   vehicle_id?: string;
   vehicle_label?: string;
   vehicle_license_plate?: string;
@@ -30,7 +30,7 @@ export interface StopTimeUpdateDB {
   departure_delay?: number;
   departure_time?: number;
   departure_uncertainty?: number;
-  schedule_relationship?: number;
+  schedule_relationship: string;
 }
 
 /**

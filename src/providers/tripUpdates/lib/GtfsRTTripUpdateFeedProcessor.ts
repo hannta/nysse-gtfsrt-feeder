@@ -9,7 +9,12 @@ import {
   StopTime,
   getTripById,
 } from '../../../lib/gtfsUtil';
-import { FeedMessage, StopTimeUpdate, VehicleDescriptor } from '../../../types';
+import {
+  FeedMessage,
+  StopTimeUpdate,
+  VehicleDescriptor,
+  ScheduleRelationship,
+} from '../../../types';
 
 /**
  * GTFS-RT feed processor config options
@@ -70,6 +75,7 @@ export class GtfsRTFeedProcessor {
       const recorded = entity.tripUpdate.timestamp
         ? new Date(entity.tripUpdate.timestamp.low * 1000)
         : new Date(feedData.header.timestamp.low * 1000);
+
       const tripDescriptor = entity.tripUpdate.trip;
 
       const tripId = tripDescriptor.tripId
@@ -80,6 +86,7 @@ export class GtfsRTFeedProcessor {
             tripDescriptor.startDate,
             tripDescriptor.startTime,
           );
+
       if (!tripId) {
         // Trip id missing from GTFS-RT data and failed to get trip id from Nysse database
         winstonInstance.info('No trip id and failed to get it from db', {
@@ -92,7 +99,7 @@ export class GtfsRTFeedProcessor {
       const tripStopTimes = await getTripStopTimes(this.regionKey, tripId);
       if (!tripStopTimes || tripStopTimes.length < 1) {
         // Incorrect trip / no trip stop times found from Nysse database
-        winstonInstance.info('No stop times for trip.', {
+        winstonInstance.info('No trip stop times found from Nysse database.', {
           regionKey: this.regionKey,
           tripId: tripDescriptor.tripId,
         });
@@ -102,11 +109,14 @@ export class GtfsRTFeedProcessor {
       const tripStartDate = tripDescriptor.startDate
         ? tripDescriptor.startDate
         : this.findTripStartDate(tripId, tripStopTimes); // E.g. Oulu feed does not have trip start :(
+
       const tripStartTime = tripDescriptor.startTime
         ? tripDescriptor.startTime
         : tripStopTimes[0].departure_time;
+
       let routeId = tripDescriptor.routeId;
       let directionId = tripDescriptor.directionId;
+
       if (!routeId || !directionId) {
         const trip = await getTripById(this.regionKey, tripId);
         routeId = routeId || trip.route_id;
@@ -121,10 +131,13 @@ export class GtfsRTFeedProcessor {
         tripStopTimes,
         routeId,
         directionId,
-        scheduleRelationship: tripDescriptor.scheduleRelationship || 0,
+        scheduleRelationship: this.convertTripScheduleRelationship(
+          tripDescriptor.scheduleRelationship,
+        ),
         recorded,
         vehicle: entity.tripUpdate.vehicle,
       });
+
       dbTripUpdates.push(data.tripUpdate);
       dbTripUpdateStopTimeUpdates.push(...data.stopTimeUpdates);
     }
@@ -163,7 +176,7 @@ export class GtfsRTFeedProcessor {
     tripStopTimes: StopTime[];
     routeId: string;
     directionId: number;
-    scheduleRelationship: number;
+    scheduleRelationship: string;
     recorded: Date;
     vehicle?: VehicleDescriptor;
   }) {
@@ -213,7 +226,10 @@ export class GtfsRTFeedProcessor {
         trip_update_id: tripUpdateId,
         stop_id: stopTime.stop_id,
         stop_sequence: stopTime.stop_sequence,
+        schedule_relationship: ScheduleRelationship.SCHEDULED,
       };
+
+      // Try to find stop time match to stop time update
       const matchedStopTimeUpdate = stopTimeUpdates.find(stopTimeUpdate => {
         return (stopTimeUpdate.stopId && stopTimeUpdate.stopId === stopTime.stop_id) ||
           (stopTimeUpdate.stopSequence && stopTimeUpdate.stopSequence === stopTime.stop_sequence)
@@ -222,10 +238,13 @@ export class GtfsRTFeedProcessor {
       });
 
       if (matchedStopTimeUpdate) {
-        newStopTimeUpdate.schedule_relationship = matchedStopTimeUpdate.scheduleRelationship;
+        newStopTimeUpdate.schedule_relationship = this.convertStopTimeScheduleRelationship(
+          matchedStopTimeUpdate.scheduleRelationship,
+        );
 
         if (matchedStopTimeUpdate.arrival) {
           newStopTimeUpdate.arrival_uncertainty = matchedStopTimeUpdate.arrival.uncertainty;
+
           if (matchedStopTimeUpdate.arrival.delay) {
             delay = matchedStopTimeUpdate.arrival.delay;
             if (matchedStopTimeUpdate.arrival.time) {
@@ -247,6 +266,7 @@ export class GtfsRTFeedProcessor {
 
         if (matchedStopTimeUpdate.departure) {
           newStopTimeUpdate.departure_uncertainty = matchedStopTimeUpdate.departure.uncertainty;
+
           if (matchedStopTimeUpdate.departure.delay) {
             delay = matchedStopTimeUpdate.departure.delay;
             if (matchedStopTimeUpdate.departure.time) {
@@ -349,5 +369,35 @@ export class GtfsRTFeedProcessor {
     }
 
     return getTripId(this.regionKey, routeId, tripStart, directionId, activeServicesDay);
+  }
+
+  private convertTripScheduleRelationship(value?: number): ScheduleRelationship {
+    switch (value) {
+      case 0:
+        return ScheduleRelationship.SCHEDULED;
+      case 1:
+        return ScheduleRelationship.ADDED;
+      case 2:
+        return ScheduleRelationship.UNSCHEDULED;
+      case 3:
+        return ScheduleRelationship.CANCELED;
+      case 5:
+        return ScheduleRelationship.REPLACEMENT;
+      default:
+        return ScheduleRelationship.SCHEDULED;
+    }
+  }
+
+  private convertStopTimeScheduleRelationship(value?: number): ScheduleRelationship {
+    switch (value) {
+      case 0:
+        return ScheduleRelationship.SCHEDULED;
+      case 1:
+        return ScheduleRelationship.SCHEDULED;
+      case 2:
+        return ScheduleRelationship.NO_DATA;
+      default:
+        return ScheduleRelationship.SCHEDULED;
+    }
   }
 }
