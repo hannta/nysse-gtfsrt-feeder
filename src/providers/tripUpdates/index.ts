@@ -1,5 +1,5 @@
 import winstonInstance from '../../config/winston';
-import { TampereProvider } from './TampereProvider';
+// import { TampereProvider } from './TampereProvider';
 import { TurkuProvider } from './TurkuProvider';
 import { GtfsRtTripUpdateProvider } from './GtfsRtTripUpdateProvider';
 import { DataProviderStatus } from '../../types';
@@ -12,7 +12,7 @@ export interface TripUpdatesDataProvider {
 
 // Active data providers
 const dataProviders: TripUpdatesDataProvider[] = [
-  new TampereProvider(),
+  // new TampereProvider(),
   new TurkuProvider(),
   new GtfsRtTripUpdateProvider(
     'oulu',
@@ -43,14 +43,13 @@ const dataProviders: TripUpdatesDataProvider[] = [
     parseInt(process.env.JYVASKYLA_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
     { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
   ),
-  /*
   new GtfsRtTripUpdateProvider(
     'tampere',
     process.env.TAMPERE_WALTTI_API_GTFSRT_TRIP_UPDATES_URL!,
     parseInt(process.env.TAMPERE_WALTTI_API_GTFSRT_TRIP_UPDATES_POLLING_INTERVAL!, 10),
     { Authorization: process.env.WALTTI_API_GTFSRT_AUTH_HEADER!! },
+    { updateTripInfoFromDb: true },
   ),
-  */
 ];
 
 export const tripUpdateStatusDataMap = new Map<string, DataProviderStatus>();
