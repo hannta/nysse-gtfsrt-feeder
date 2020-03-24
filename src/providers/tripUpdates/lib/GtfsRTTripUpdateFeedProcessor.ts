@@ -121,6 +121,13 @@ export class GtfsRTFeedProcessor {
 
       if (this.options?.updateTripInfoFromDb || !routeId || !directionId) {
         const trip = await getTripById(this.regionKey, tripId);
+        if (!trip) {
+          winstonInstance.info('No trip found from Nysse database.', {
+            regionKey: this.regionKey,
+            tripId,
+          });
+          continue;
+        }
         routeId = trip.route_id;
         directionId = trip.direction_id;
       }
