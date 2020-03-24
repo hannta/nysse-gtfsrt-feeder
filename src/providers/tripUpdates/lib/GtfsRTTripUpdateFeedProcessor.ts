@@ -22,6 +22,9 @@ import {
 export interface GtfsRTFeedProcessorSettings {
   /** How old records to keep, seconds  */
   keepOldRecords?: number;
+
+  /** Get trip routeId and direction from nysse database. This fixes e.g. "incorrect" routeId if in Tampere data */
+  updateTripInfoFromDb?: boolean;
 }
 
 /**
@@ -51,7 +54,6 @@ export class GtfsRTFeedProcessor {
     );
 
     if (!feedData || !feedData.entity) {
-      // There should be at least empty entity(?)
       throw new Error('No feed data');
     }
 
@@ -117,10 +119,10 @@ export class GtfsRTFeedProcessor {
       let routeId = tripDescriptor.routeId;
       let directionId = tripDescriptor.directionId;
 
-      if (!routeId || !directionId) {
+      if (this.options?.updateTripInfoFromDb || !routeId || !directionId) {
         const trip = await getTripById(this.regionKey, tripId);
-        routeId = routeId || trip.route_id;
-        directionId = directionId || trip.direction_id;
+        routeId = trip.route_id;
+        directionId = trip.direction_id;
       }
 
       const data = this.processTripUpdate({
