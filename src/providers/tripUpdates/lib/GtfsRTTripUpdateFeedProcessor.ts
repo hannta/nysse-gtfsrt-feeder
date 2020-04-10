@@ -57,6 +57,8 @@ export class GtfsRTFeedProcessor {
       throw new Error('No feed data');
     }
 
+    const isFullDataset = feedData.header.incrementality === 0; // 0 = FULL_DATASET
+
     const dbTripUpdates: TripUpdateDB[] = [];
     const dbTripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
 
@@ -80,14 +82,14 @@ export class GtfsRTFeedProcessor {
 
       const tripDescriptor = entity.tripUpdate.trip;
 
-      const tripId = tripDescriptor.tripId
-        ? tripDescriptor.tripId
-        : await this.getTripIdFromDb(
-            tripDescriptor.routeId,
-            tripDescriptor.directionId,
-            tripDescriptor.startDate,
-            tripDescriptor.startTime,
-          );
+      const tripId =
+        tripDescriptor.tripId ??
+        (await this.getTripIdFromDb(
+          tripDescriptor.routeId,
+          tripDescriptor.directionId,
+          tripDescriptor.startDate,
+          tripDescriptor.startTime,
+        ));
 
       if (!tripId) {
         // Trip id missing from GTFS-RT data and failed to get trip id from Nysse database
@@ -108,17 +110,14 @@ export class GtfsRTFeedProcessor {
         continue;
       }
 
-      const tripStartDate = tripDescriptor.startDate
-        ? tripDescriptor.startDate
-        : this.findTripStartDate(tripId, tripStopTimes); // E.g. Oulu feed does not have trip start :(
-
-      const tripStartTime = tripDescriptor.startTime
-        ? tripDescriptor.startTime
-        : tripStopTimes[0].departure_time;
+      const tripStartDate =
+        tripDescriptor.startDate ?? this.findTripStartDate(tripId, tripStopTimes); // E.g. Oulu feed does not have trip start :(
+      const tripStartTime = tripDescriptor.startTime ?? tripStopTimes[0].departure_time;
 
       let routeId = tripDescriptor.routeId;
       let directionId = tripDescriptor.directionId;
 
+      // Get routeId and directionId from Nysse db
       if (this.options?.updateTripInfoFromDb || !routeId || !directionId) {
         const trip = await getTripById(this.regionKey, tripId);
         if (!trip) {
@@ -132,6 +131,10 @@ export class GtfsRTFeedProcessor {
         directionId = trip.direction_id;
       }
 
+      const tripScheduleRelationship = this.convertTripScheduleRelationship(
+        tripDescriptor.scheduleRelationship,
+      );
+
       const data = this.processTripUpdate({
         tripId,
         tripStartDate,
@@ -140,9 +143,7 @@ export class GtfsRTFeedProcessor {
         tripStopTimes,
         routeId,
         directionId,
-        scheduleRelationship: this.convertTripScheduleRelationship(
-          tripDescriptor.scheduleRelationship,
-        ),
+        scheduleRelationship: tripScheduleRelationship,
         recorded,
         vehicle: entity.tripUpdate.vehicle,
       });
@@ -152,6 +153,7 @@ export class GtfsRTFeedProcessor {
     }
 
     await updateDatabase(
+      isFullDataset,
       this.regionKey,
       dbTripUpdates,
       dbTripUpdateStopTimeUpdates,
@@ -190,11 +192,7 @@ export class GtfsRTFeedProcessor {
     vehicle?: VehicleDescriptor;
   }) {
     const tripUpdateId = `${tripId}-${tripStartDate}-${tripStartTime}`;
-    const stopTimeUpdateDBs = this.createStopTimeUpdates(
-      tripUpdateId,
-      tripStopTimes,
-      tripStopTimeUpdates,
-    );
+
     const tripUpdateDb = {
       id: tripUpdateId,
       trip_id: tripId,
@@ -203,11 +201,17 @@ export class GtfsRTFeedProcessor {
       trip_start_time: tripStartTime,
       trip_start_date: tripStartDate,
       schedule_relationship: scheduleRelationship,
-      vehicle_id: vehicle ? vehicle.id : undefined,
-      vehicle_label: vehicle ? vehicle.label : undefined,
-      vehicle_license_plate: vehicle ? vehicle.licensePlate : undefined,
+      vehicle_id: vehicle?.id,
+      vehicle_label: vehicle?.label,
+      vehicle_license_plate: vehicle?.licensePlate,
       recorded: moment(recorded).format('YYYY-MM-DD HH:mm:ss'),
     };
+
+    // Build stop times only if scheduled relationship is scheduled
+    const stopTimeUpdateDBs =
+      scheduleRelationship === ScheduleRelationship.SCHEDULED
+        ? this.createStopTimeUpdates(tripUpdateId, tripStopTimes, tripStopTimeUpdates)
+        : [];
 
     return {
       tripUpdate: tripUpdateDb,
@@ -227,19 +231,24 @@ export class GtfsRTFeedProcessor {
     tripStopTimes: StopTime[],
     stopTimeUpdates: StopTimeUpdate[],
   ): StopTimeUpdateDB[] {
+    if (tripStopTimes.length < 1) {
+      return [];
+    }
+
     const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
-    let delay;
+
+    let delay: number | undefined;
 
     for (const stopTime of tripStopTimes) {
       const newStopTimeUpdate: StopTimeUpdateDB = {
         trip_update_id: tripUpdateId,
         stop_id: stopTime.stop_id,
         stop_sequence: stopTime.stop_sequence,
-        schedule_relationship: ScheduleRelationship.SCHEDULED,
+        schedule_relationship: ScheduleRelationship.SCHEDULED, // Default to SCHEDULED
       };
 
       // Try to find stop time match to stop time update
-      const matchedStopTimeUpdate = stopTimeUpdates.find(stopTimeUpdate => {
+      const matchedStopTimeUpdate = stopTimeUpdates.find((stopTimeUpdate) => {
         return (stopTimeUpdate.stopId && stopTimeUpdate.stopId === stopTime.stop_id) ||
           (stopTimeUpdate.stopSequence && stopTimeUpdate.stopSequence === stopTime.stop_sequence)
           ? true
@@ -251,51 +260,107 @@ export class GtfsRTFeedProcessor {
           matchedStopTimeUpdate.scheduleRelationship,
         );
 
-        if (matchedStopTimeUpdate.arrival) {
-          newStopTimeUpdate.arrival_uncertainty = matchedStopTimeUpdate.arrival.uncertainty;
-
-          if (matchedStopTimeUpdate.arrival.delay) {
-            delay = matchedStopTimeUpdate.arrival.delay;
-            if (matchedStopTimeUpdate.arrival.time) {
-              newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
-            } else {
-              newStopTimeUpdate.arrival_delay = matchedStopTimeUpdate.arrival.delay;
-            }
-          } else if (matchedStopTimeUpdate.arrival.time) {
-            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.arrival.time.low;
-            delay = this.getDelay(matchedStopTimeUpdate.arrival.time.low, stopTime.arrival_time);
-          } else {
-            // No arrival, use previous delay if available
-            newStopTimeUpdate.arrival_delay = delay || undefined;
-          }
-        } else {
-          // No arrival data at all, use previous delay if available
-          newStopTimeUpdate.arrival_delay = delay || undefined;
+        if (newStopTimeUpdate.schedule_relationship === ScheduleRelationship.NO_DATA) {
+          // No stop time data
+          delay = 0;
+          continue;
         }
 
-        if (matchedStopTimeUpdate.departure) {
-          newStopTimeUpdate.departure_uncertainty = matchedStopTimeUpdate.departure.uncertainty;
+        if (newStopTimeUpdate.schedule_relationship === ScheduleRelationship.SKIPPED) {
+          // No stop time data
+          delay = 0;
+          continue;
+        }
 
-          if (matchedStopTimeUpdate.departure.delay) {
-            delay = matchedStopTimeUpdate.departure.delay;
-            if (matchedStopTimeUpdate.departure.time) {
-              newStopTimeUpdate.departure_time = matchedStopTimeUpdate.departure.time.low;
+        let arrival;
+        let departure;
+
+        if (
+          matchedStopTimeUpdate.arrival &&
+          (matchedStopTimeUpdate.arrival.time || matchedStopTimeUpdate.arrival.time)
+        ) {
+          arrival = matchedStopTimeUpdate.arrival;
+        }
+
+        if (
+          matchedStopTimeUpdate.departure &&
+          (matchedStopTimeUpdate.departure.time || matchedStopTimeUpdate.departure.time)
+        ) {
+          departure = matchedStopTimeUpdate.departure;
+        }
+
+        if (!arrival && departure) {
+          arrival = departure;
+        }
+
+        if (!departure && arrival) {
+          departure = arrival;
+        }
+
+        if (arrival) {
+          newStopTimeUpdate.arrival_uncertainty = arrival.uncertainty;
+
+          if (arrival.delay) {
+            delay = arrival.delay;
+            if (arrival.time) {
+              newStopTimeUpdate.arrival_time = arrival.time.low;
             } else {
-              newStopTimeUpdate.departure_delay = matchedStopTimeUpdate.departure.delay;
+              newStopTimeUpdate.arrival_delay = arrival.delay;
             }
-          } else if (matchedStopTimeUpdate.departure.time) {
-            newStopTimeUpdate.arrival_time = matchedStopTimeUpdate.departure.time.low;
-            delay = this.getDelay(
-              matchedStopTimeUpdate.departure.time.low,
-              stopTime.departure_time,
-            );
+          } else if (arrival.time) {
+            newStopTimeUpdate.arrival_time = arrival.time.low;
+            delay = this.getDelay(arrival.time.low, stopTime.arrival_time);
           } else {
-            // No departure, use previous delay if available
-            newStopTimeUpdate.departure_delay = delay || undefined;
+            // Incorrect arrival info, no time or delay
+            winstonInstance.error('Incorrect stop time, skipping', {
+              trip_update_id: tripUpdateId,
+              regionKey: this.regionKey,
+            });
+            continue;
           }
         } else {
-          // No departure data at all, use previous delay if available
-          newStopTimeUpdate.departure_delay = delay || undefined;
+          // No arrival, use previous delay if available
+          newStopTimeUpdate.arrival_delay = delay;
+          winstonInstance.info(
+            'Stop time update does not have arrival info, using delay if available',
+            {
+              trip_update_id: tripUpdateId,
+              regionKey: this.regionKey,
+            },
+          );
+        }
+
+        if (departure) {
+          newStopTimeUpdate.departure_uncertainty = departure.uncertainty;
+
+          if (departure.delay) {
+            delay = departure.delay;
+            if (departure.time) {
+              newStopTimeUpdate.departure_time = departure.time.low;
+            } else {
+              newStopTimeUpdate.departure_delay = departure.delay;
+            }
+          } else if (departure.time) {
+            newStopTimeUpdate.arrival_time = departure.time.low;
+            delay = this.getDelay(departure.time.low, stopTime.departure_time);
+          } else {
+            // Incorrect departure info, no time or delay
+            winstonInstance.error('Incorrect stop time, skipping', {
+              trip_update_id: tripUpdateId,
+              regionKey: this.regionKey,
+            });
+            continue;
+          }
+        } else {
+          // No departure, use previous delay if available
+          newStopTimeUpdate.departure_delay = delay;
+          winstonInstance.info(
+            'Stop time update does not have departure info, using delay if available',
+            {
+              trip_update_id: tripUpdateId,
+              regionKey: this.regionKey,
+            },
+          );
         }
       } else {
         // Unable to mach to stop time update, use previous delay
