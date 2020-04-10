@@ -191,6 +191,7 @@ export async function storeTripUpdateFeed(
     }
   }
 
-  await updateDatabase(regionName, tripUpdates, tripUpdateStopTimeUpdates);
+  const isFullDataset = true; // Assume this data contains full set
+  await updateDatabase(isFullDataset, regionName, tripUpdates, tripUpdateStopTimeUpdates);
   return tripUpdates.length;
 }

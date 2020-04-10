@@ -3,25 +3,10 @@ import Knex from 'knex';
 
 /**
  * Insert or update data
+ * @param knexTransaction
  * @param tableName
  * @param data
- *
-export async function insertOrUpdate(tableName: string, data: object[]) {
-  if (data.length < 1) {
-    return;
-  }
-
-  const firstData = data[0] ? data[0] : data;
-  return knex.raw(
-    knex(tableName).insert(data).toQuery() +
-      ' ON DUPLICATE KEY UPDATE ' +
-      Object.getOwnPropertyNames(firstData)
-        .map((field) => `${field}=VALUES(${field})`)
-        .join(', '),
-  );
-}
-*/
-
+ */
 export async function insertOrUpdate(
   knexTransaction: Knex.Transaction,
   tableName: string,
