@@ -52,7 +52,7 @@ export async function updateDatabase(
 
   return knex.transaction(async (trx) => {
     if (isFullDataset) {
-      trx(tripUpdatesTable).del();
+      await trx(tripUpdatesTable).del();
     } else {
       await deleteOldData(trx, tripUpdatesTable, keepOldRecords);
     }
