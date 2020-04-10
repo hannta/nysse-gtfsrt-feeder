@@ -341,7 +341,7 @@ export class GtfsRTFeedProcessor {
               newStopTimeUpdate.departure_delay = departure.delay;
             }
           } else if (departure.time) {
-            newStopTimeUpdate.arrival_time = departure.time.low;
+            newStopTimeUpdate.departure_time = departure.time.low;
             delay = this.getDelay(departure.time.low, stopTime.departure_time);
           } else {
             // Incorrect departure info, no time or delay
