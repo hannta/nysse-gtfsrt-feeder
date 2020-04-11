@@ -238,6 +238,7 @@ export class GtfsRTFeedProcessor {
     const tripUpdateStopTimeUpdates: StopTimeUpdateDB[] = [];
 
     let delay: number | undefined;
+    let firstDelay: number | undefined; // This trip's first realtime delay
 
     for (const stopTime of tripStopTimes) {
       const newStopTimeUpdate: StopTimeUpdateDB = {
@@ -263,15 +264,18 @@ export class GtfsRTFeedProcessor {
         if (newStopTimeUpdate.schedule_relationship === ScheduleRelationship.NO_DATA) {
           // No stop time data
           delay = 0;
+          firstDelay = firstDelay ?? delay;
           continue;
         }
 
         if (newStopTimeUpdate.schedule_relationship === ScheduleRelationship.SKIPPED) {
           // No stop time data
           delay = 0;
+          firstDelay = firstDelay ?? delay;
           continue;
         }
 
+        // Update arrival & departure
         let arrival;
         let departure;
 
@@ -302,6 +306,7 @@ export class GtfsRTFeedProcessor {
 
           if (arrival.delay) {
             delay = arrival.delay;
+            firstDelay = firstDelay ?? delay;
             if (arrival.time) {
               newStopTimeUpdate.arrival_time = arrival.time.low;
             } else {
@@ -310,6 +315,7 @@ export class GtfsRTFeedProcessor {
           } else if (arrival.time) {
             newStopTimeUpdate.arrival_time = arrival.time.low;
             delay = this.getDelay(arrival.time.low, stopTime.arrival_time);
+            firstDelay = firstDelay ?? delay;
           } else {
             // Incorrect arrival info, no time or delay
             winstonInstance.error('Incorrect stop time, skipping', {
@@ -335,6 +341,7 @@ export class GtfsRTFeedProcessor {
 
           if (departure.delay) {
             delay = departure.delay;
+            firstDelay = firstDelay ?? delay;
             if (departure.time) {
               newStopTimeUpdate.departure_time = departure.time.low;
             } else {
@@ -343,6 +350,7 @@ export class GtfsRTFeedProcessor {
           } else if (departure.time) {
             newStopTimeUpdate.departure_time = departure.time.low;
             delay = this.getDelay(departure.time.low, stopTime.departure_time);
+            firstDelay = firstDelay ?? delay;
           } else {
             // Incorrect departure info, no time or delay
             winstonInstance.error('Incorrect stop time, skipping', {
@@ -368,17 +376,30 @@ export class GtfsRTFeedProcessor {
         newStopTimeUpdate.departure_delay = delay;
       }
 
-      if (
-        !newStopTimeUpdate.arrival_delay &&
-        !newStopTimeUpdate.arrival_time &&
-        !newStopTimeUpdate.departure_delay &&
-        !newStopTimeUpdate.departure_time
-      ) {
-        // If we do not have any times for stop time update, skip.
-        continue;
-      }
-
       tripUpdateStopTimeUpdates.push(newStopTimeUpdate);
+
+      if (
+        firstDelay !== null &&
+        firstDelay !== undefined &&
+        !tripUpdateStopTimeUpdates[0].arrival_time &&
+        !tripUpdateStopTimeUpdates[0].arrival_delay &&
+        !tripUpdateStopTimeUpdates[0].departure_time &&
+        !tripUpdateStopTimeUpdates[0].departure_delay
+      ) {
+        // Populate delay to previous (past) stop times which does not have realtime data.
+        for (const update of tripUpdateStopTimeUpdates) {
+          if (
+            update.arrival_time ||
+            update.arrival_delay ||
+            update.departure_time ||
+            update.departure_delay
+          ) {
+            break;
+          }
+          update.arrival_delay = firstDelay;
+          update.departure_delay = firstDelay;
+        }
+      }
     }
 
     return tripUpdateStopTimeUpdates;
